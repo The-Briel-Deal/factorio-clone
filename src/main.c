@@ -38,6 +38,8 @@ int main() {
   double old_time, new_time;
   get_dtime(&old_time);
 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
   while (true) {
     wl_display_dispatch_pending(window.display);
 
