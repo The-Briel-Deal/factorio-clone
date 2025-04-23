@@ -136,10 +136,22 @@ struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
 }
 
 const struct box_verts square_verts = {
-    {.x = 50, .y = 50},
-    {.x = -50, .y = 50},
-    {.x = 50, .y = -50},
-    {.x = -50, .y = -50},
+    {
+        {.x = 50, .y = 50},
+        {1.0f, 1.0f},
+    },
+    {
+        {.x = -50, .y = 50},
+        {0.0f, 1.0f},
+    },
+    {
+        {.x = 50, .y = -50},
+        {1.0f, 0.0f},
+    },
+    {
+        {.x = -50, .y = -50},
+        {0.0f, 0.0f},
+    },
 };
 
 struct gf_obj *gf_obj_create_box() {

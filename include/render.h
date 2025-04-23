@@ -13,11 +13,16 @@ struct triangle_verts {
   vertex v3;
 };
 
+struct tex_vert {
+  vertex pos;
+  vec2 tex_coord;
+};
+
 struct box_verts {
-  vertex top_right;
-  vertex top_left;
-  vertex bottom_right;
-  vertex bottom_left;
+  struct tex_vert top_right;
+  struct tex_vert top_left;
+  struct tex_vert bottom_right;
+  struct tex_vert bottom_left;
 };
 
 struct gf_obj;
