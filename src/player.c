@@ -1,5 +1,9 @@
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <sys/types.h>
 #include <xkbcommon/xkbcommon.h>
+
+#include "stb_image.h"
 
 #include "common.h"
 #include "gf_math.h"
@@ -7,10 +11,12 @@
 #include "player.h"
 #include "render.h"
 
-#define PLAYER_LIST_MAX 128
+#define PLAYER_LIST_MAX     128
 
-#define PLAYER_SPEED    300.0f
-#define PLAYER_LERP     5.0f
+#define PLAYER_SPEED        300.0f
+#define PLAYER_LERP         5.0f
+
+#define PLAYER_TEXTURE_PATH "static/factorio-icon.png"
 
 enum gf_player_input_state {
   GF_PLAYER_INPUT_UP    = 0b0001,
@@ -75,6 +81,24 @@ static void gf_debug_log_player_input(enum gf_player_input_state input_state) {
 
 #endif
 
+static GLuint gf_player_load_texture() {
+  GLuint texture;
+  int width, height, nrChannels;
+  u_int8_t *img_data =
+      stbi_load(PLAYER_TEXTURE_PATH, &width, &height, &nrChannels, 0);
+  assert(img_data != NULL);
+  assert(nrChannels == 4);
+  glCreateTextures(GL_TEXTURE_2D, 1, &texture);
+  glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glTextureStorage2D(texture, 1, GL_RGBA8, width, height);
+
+  return texture;
+}
+
 struct gf_player *gf_player_create() {
   if (gf_player_list.count + 1 >= gf_player_list.capacity) {
     gf_log(DEBUG_LOG,
@@ -83,6 +107,7 @@ struct gf_player *gf_player_create() {
            gf_player_list.count, gf_player_list.capacity);
     return NULL;
   }
+  gf_player_load_texture();
 
   struct gf_player *player = &gf_player_list.items[gf_player_list.count++];
   player->input_state      = 0b0000;
