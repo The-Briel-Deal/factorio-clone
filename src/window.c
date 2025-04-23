@@ -2,7 +2,6 @@
 #include <GL/gl.h>
 
 #include <assert.h>
-#include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
