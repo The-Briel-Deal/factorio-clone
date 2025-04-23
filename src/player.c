@@ -91,6 +91,7 @@ static void gf_debug_log_player_input(enum gf_player_input_state input_state) {
 static GLuint gf_player_load_texture() {
   GLuint texture;
   int width, height, nrChannels;
+  stbi_set_flip_vertically_on_load(true);
   u_int8_t *img_data =
       stbi_load(PLAYER_TEXTURE_PATH, &width, &height, &nrChannels, 0);
   assert(img_data != NULL);
@@ -187,8 +188,8 @@ void gf_player_draw(struct gf_player *player) {
 #ifdef GF_DEBUG_PLAYER_INPUT
   gf_debug_log_player_input(player->input_state);
 #endif
-	// Set tex unit.
-	gf_obj_set_uniform_int(player->obj, GF_UNIFORM_PLAYER_TEX_LOCATION, 0);
+  // Set tex unit.
+  gf_obj_set_uniform_int(player->obj, GF_UNIFORM_PLAYER_TEX_LOCATION, 0);
   glBindTextureUnit(0, player->texture);
   gf_obj_commit_state(player->obj);
   gf_obj_draw(player->obj);
