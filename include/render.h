@@ -35,6 +35,8 @@ void gf_shader_commit_state(struct gf_shader *shader);
 struct gf_obj *gf_obj_create_box();
 bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader);
 
+void gf_obj_set_uniform_int(struct gf_obj *obj, GLint location, GLint value);
+
 tf_scale gf_obj_get_scale(struct gf_obj *obj);
 void gf_obj_set_scale(struct gf_obj *obj, tf_scale scale);
 

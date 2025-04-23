@@ -27,6 +27,7 @@ enum gf_player_input_state {
 
 struct gf_player {
   struct gf_obj *obj;
+  GLuint texture;
   vec2s movement;
   enum gf_player_input_state input_state;
 };
@@ -36,25 +37,31 @@ STATIC_LIST(gf_player_list, struct gf_player, 128)
 const char *vert_shader_src =
     "#version 450 core\n"
     "layout (location = " TO_STR(GF_ATTRIB_VERT_LOCATION) ") in vec2 aPos;\n"
+    "layout (location = " TO_STR(GF_ATTRIB_TEX_COORD_LOCATION) ") in vec2 aTexCoord;\n"
 		"layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;"
 		"layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;"
 		"\n"
-    "out vec4 vertexColor;\n"
+    // "out vec4 vertexColor;\n"
+		"out vec2 texCoord;\n"
     "\n"
     "void main()\n"
     "{\n"
     "    gl_Position = projection * model * vec4(aPos, 0.0, 1.0);\n"
-    "    vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
+    // "    vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
+		"    texCoord = aTexCoord;\n"
     "}\n";
 
 const char *frag_shader_src =
     "#version 450 core\n"
-    "in vec4 vertexColor;\n"
+    // "in vec4 vertexColor;\n"
+    "in vec2 texCoord;\n"
     "out vec4 FragColor;\n"
+    "\n"
+    "layout (location = " TO_STR(GF_UNIFORM_PLAYER_TEX_LOCATION) ") uniform sampler2D playerTex;\n"
     "\n"
     "void main()\n"
     "{\n"
-    "    FragColor = vertexColor;\n"
+    "    FragColor = texture(playerTex, texCoord);\n"
     "}\n";
 
 #ifdef GF_DEBUG_PLAYER_INPUT
@@ -95,6 +102,8 @@ static GLuint gf_player_load_texture() {
   glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   glTextureStorage2D(texture, 1, GL_RGBA8, width, height);
+  glTextureSubImage2D(texture, 0, 0, 0, width, height, GL_RGBA,
+                      GL_UNSIGNED_BYTE, img_data);
 
   stbi_image_free(img_data);
   return texture;
@@ -108,11 +117,12 @@ struct gf_player *gf_player_create() {
            gf_player_list.count, gf_player_list.capacity);
     return NULL;
   }
-  gf_player_load_texture();
 
   struct gf_player *player = &gf_player_list.items[gf_player_list.count++];
-  player->input_state      = 0b0000;
-  player->movement         = (vec2s){.x = 0.0, .y = 0.0};
+
+  player->texture     = gf_player_load_texture();
+  player->input_state = 0b0000;
+  player->movement    = (vec2s){.x = 0.0, .y = 0.0};
 
   player->obj = gf_obj_create_box();
   struct gf_shader *shader =
@@ -177,6 +187,9 @@ void gf_player_draw(struct gf_player *player) {
 #ifdef GF_DEBUG_PLAYER_INPUT
   gf_debug_log_player_input(player->input_state);
 #endif
+	// Set tex unit.
+	gf_obj_set_uniform_int(player->obj, GF_UNIFORM_PLAYER_TEX_LOCATION, 0);
+  glBindTextureUnit(0, player->texture);
   gf_obj_commit_state(player->obj);
   gf_obj_draw(player->obj);
 }

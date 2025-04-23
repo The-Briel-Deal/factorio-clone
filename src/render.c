@@ -174,11 +174,19 @@ struct gf_obj *gf_obj_create_box() {
                        GL_DYNAMIC_STORAGE_BIT);
 
   glCreateVertexArrays(1, &obj->vao);
-  glVertexArrayVertexBuffer(obj->vao, 0, obj->vbo, 0, sizeof(vertex));
+  glVertexArrayVertexBuffer(obj->vao, 0, obj->vbo, 0, sizeof(struct tex_vert));
   glVertexArrayElementBuffer(obj->vao, obj->ebo);
-  glEnableVertexArrayAttrib(obj->vao, 0);
-  glVertexArrayAttribFormat(obj->vao, 0, 2, GL_FLOAT, false, 0);
-  glVertexArrayAttribBinding(obj->vao, 0, 0);
+  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_VERT_LOCATION);
+  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_VERT_LOCATION,
+                            sizeof(vertex) / sizeof(GLfloat), GL_FLOAT, false,
+                            offsetof(struct tex_vert, pos));
+  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_VERT_LOCATION, 0);
+
+  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION);
+  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION,
+                            sizeof(vec2) / sizeof(GLfloat), GL_FLOAT, false,
+                            offsetof(struct tex_vert, tex_coord));
+  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION, 0);
 
   obj->state = (struct obj_state){
       .transform =
@@ -193,6 +201,10 @@ struct gf_obj *gf_obj_create_box() {
           },
   };
   return obj;
+}
+
+void gf_obj_set_uniform_int(struct gf_obj *obj, GLint location, GLint value) {
+  glProgramUniform1i(obj->shader->program, location, value);
 }
 
 bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
