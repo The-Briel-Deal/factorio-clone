@@ -91,7 +91,6 @@ static void gf_debug_log_player_input(enum gf_player_input_state input_state) {
 static GLuint gf_player_load_texture() {
   GLuint texture;
   int width, height, nrChannels;
-  stbi_set_flip_vertically_on_load(true);
   u_int8_t *img_data =
       stbi_load(PLAYER_TEXTURE_PATH, &width, &height, &nrChannels, 0);
   assert(img_data != NULL);

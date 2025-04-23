@@ -12,6 +12,7 @@
 #include <wayland-egl.h>
 #include <wayland-util.h>
 
+#include "common.h"
 #include "egl.h"
 #include "log.h"
 #include "player.h"
@@ -25,6 +26,8 @@ void get_dtime(double *dtime) {
 }
 
 int main() {
+  gf_stbi_setup();
+
   struct gf_window window;
   init_gf_window(&window);
   struct gf_egl_state egl_state;
@@ -38,8 +41,8 @@ int main() {
   double old_time, new_time;
   get_dtime(&old_time);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
   while (true) {
     wl_display_dispatch_pending(window.display);
 

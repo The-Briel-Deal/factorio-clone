@@ -26,4 +26,6 @@
       .capacity = size,                                                        \
   };
 
+void gf_stbi_setup();
+
 #endif
