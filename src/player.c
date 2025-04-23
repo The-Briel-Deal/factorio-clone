@@ -96,6 +96,7 @@ static GLuint gf_player_load_texture() {
 
   glTextureStorage2D(texture, 1, GL_RGBA8, width, height);
 
+  stbi_image_free(img_data);
   return texture;
 }
 
