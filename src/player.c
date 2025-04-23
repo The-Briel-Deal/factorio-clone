@@ -89,24 +89,7 @@ static void gf_debug_log_player_input(enum gf_player_input_state input_state) {
 #endif
 
 static GLuint gf_player_load_texture() {
-  GLuint texture;
-  int width, height, nrChannels;
-  u_int8_t *img_data =
-      stbi_load(PLAYER_TEXTURE_PATH, &width, &height, &nrChannels, 0);
-  assert(img_data != NULL);
-  assert(nrChannels == 4);
-  glCreateTextures(GL_TEXTURE_2D, 1, &texture);
-  glTextureParameteri(texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTextureParameteri(texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTextureParameteri(texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTextureParameteri(texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  glTextureStorage2D(texture, 1, GL_RGBA8, width, height);
-  glTextureSubImage2D(texture, 0, 0, 0, width, height, GL_RGBA,
-                      GL_UNSIGNED_BYTE, img_data);
-
-  stbi_image_free(img_data);
-  return texture;
+  return gf_load_texture(PLAYER_TEXTURE_PATH);
 }
 
 struct gf_player *gf_player_create() {
