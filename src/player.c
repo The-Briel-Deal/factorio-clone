@@ -109,6 +109,7 @@ struct gf_player *gf_player_create() {
   struct gf_shader *shader =
       gf_compile_shaders(vert_shader_src, frag_shader_src);
   gf_obj_set_shader(player->obj, shader);
+  gf_obj_set_texture(player->obj, "playerTex", &player->texture);
   gf_obj_commit_state(player->obj);
 
   return player;
@@ -168,9 +169,6 @@ void gf_player_draw(struct gf_player *player) {
 #ifdef GF_DEBUG_PLAYER_INPUT
   gf_debug_log_player_input(player->input_state);
 #endif
-  // Set tex unit.
-  gf_obj_set_uniform_int(player->obj, GF_UNIFORM_PLAYER_TEX_LOCATION, 0);
-  glBindTextureUnit(0, player->texture.gl_name);
   gf_obj_commit_state(player->obj);
   gf_obj_draw(player->obj);
 }

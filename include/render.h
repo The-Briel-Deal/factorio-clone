@@ -1,11 +1,12 @@
 #ifndef GF_DRAW_H
 #define GF_DRAW_H
 
-
-#include "gf_math.h"
 #include <GL/gl.h>
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "gf_math.h"
+#include "texture.h"
 
 struct triangle_verts {
   vertex v1;
@@ -34,6 +35,8 @@ void gf_shader_commit_state(struct gf_shader *shader);
 
 struct gf_obj *gf_obj_create_box();
 bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader);
+bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
+                        struct gf_texture *texture);
 
 void gf_obj_set_uniform_int(struct gf_obj *obj, GLint location, GLint value);
 

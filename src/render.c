@@ -10,6 +10,7 @@
 #include "gf_math.h"
 #include "log.h"
 #include "render.h"
+#include "texture.h"
 
 #define OBJ_LIST_MAX            128
 #define SHADER_PROGRAM_LIST_MAX 128
@@ -58,6 +59,8 @@ struct gf_obj {
     } transform;
   } state;
   struct gf_shader *shader;
+  struct gf_texture *texture;
+  int texture_location;
 };
 
 STATIC_LIST(gf_obj_list, struct gf_obj, OBJ_LIST_MAX)
@@ -203,15 +206,21 @@ struct gf_obj *gf_obj_create_box() {
   return obj;
 }
 
-void gf_obj_set_uniform_int(struct gf_obj *obj, GLint location, GLint value) {
-  glProgramUniform1i(obj->shader->program, location, value);
-}
-
 bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
   if (obj->shader == shader) {
     return false;
   }
   obj->shader = shader;
+  return true;
+}
+
+bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
+                        struct gf_texture *texture) {
+  if (obj->texture == texture) {
+    return false;
+  }
+  obj->texture          = texture;
+  obj->texture_location = glGetUniformLocation(obj->shader->program, name);
   return true;
 }
 
@@ -277,6 +286,8 @@ void gf_obj_commit_state(struct gf_obj *obj) {
 
 bool gf_obj_draw(struct gf_obj *obj) {
   glUseProgram(obj->shader->program);
+  glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
+  glBindTextureUnit(0, obj->texture->gl_name);
   glBindVertexArray(obj->vao);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   return true;
