@@ -1,4 +1,4 @@
-CFLAGS  := -std=gnu99 -Iinclude -Ibuild/protocols/include -Wall -Werror -lEGL \
+CFLAGS  := -std=gnu99 -Iinclude -Ibuild/protocols/include -Werror -lEGL \
   -lm -lwayland-egl -lwayland-client -lxkbcommon -lGL -DGL_GLEXT_PROTOTYPES
 HEADERS := $(wildcard include/*.h) build/protocols/include/xdg-shell.h build/protocols/include/cursor-shape.h
 SOURCES := $(wildcard src/*.c)
