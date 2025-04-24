@@ -12,10 +12,10 @@
 #include <wayland-egl.h>
 #include <wayland-util.h>
 
-#include "common.h"
 #include "egl.h"
 #include "log.h"
 #include "player.h"
+#include "texture.h"
 #include "window.h"
 
 #define NANO_PER_SEC 1000000000

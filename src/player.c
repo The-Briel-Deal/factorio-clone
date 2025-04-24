@@ -10,6 +10,7 @@
 #include "log.h"
 #include "player.h"
 #include "render.h"
+#include "texture.h"
 
 #define PLAYER_LIST_MAX     128
 
@@ -27,7 +28,7 @@ enum gf_player_input_state {
 
 struct gf_player {
   struct gf_obj *obj;
-  GLuint texture;
+  struct gf_texture texture;
   vec2s movement;
   enum gf_player_input_state input_state;
 };
@@ -88,9 +89,6 @@ static void gf_debug_log_player_input(enum gf_player_input_state input_state) {
 
 #endif
 
-static GLuint gf_player_load_texture() {
-  return gf_load_texture(PLAYER_TEXTURE_PATH);
-}
 
 struct gf_player *gf_player_create() {
   if (gf_player_list.count + 1 >= gf_player_list.capacity) {
@@ -103,7 +101,7 @@ struct gf_player *gf_player_create() {
 
   struct gf_player *player = &gf_player_list.items[gf_player_list.count++];
 
-  player->texture     = gf_player_load_texture();
+  gf_load_texture(&player->texture, PLAYER_TEXTURE_PATH);
   player->input_state = 0b0000;
   player->movement    = (vec2s){.x = 0.0, .y = 0.0};
 
@@ -172,7 +170,7 @@ void gf_player_draw(struct gf_player *player) {
 #endif
   // Set tex unit.
   gf_obj_set_uniform_int(player->obj, GF_UNIFORM_PLAYER_TEX_LOCATION, 0);
-  glBindTextureUnit(0, player->texture);
+  glBindTextureUnit(0, player->texture.gl_name);
   gf_obj_commit_state(player->obj);
   gf_obj_draw(player->obj);
 }
