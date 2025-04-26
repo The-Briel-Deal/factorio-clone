@@ -23,7 +23,7 @@ static const char *vert_shader_src =
     "\n"
     "void main()\n"
     "{\n"
-    "    vec4 tileOffset = vec4(150.0 * gl_InstanceID, 0, 0, 0)\n;"
+    "    vec4 tileOffset = vec4(128.0 * gl_InstanceID, 0, 0, 0)\n;"
          // We need to apply the offset after transformation occurs to prevent 
          // scaling shooting the tile offscreen.
     "    vec4 worldPosition = model * vec4(aPos, 0.0, 1.0);\n"
