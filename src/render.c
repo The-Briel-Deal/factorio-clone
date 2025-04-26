@@ -289,3 +289,12 @@ bool gf_obj_draw(struct gf_obj *obj) {
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   return true;
 }
+
+bool gf_obj_draw_instanced(struct gf_obj *obj) {
+  glUseProgram(obj->shader->program);
+  glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
+  glBindTextureUnit(0, obj->texture->gl_name);
+  glBindVertexArray(obj->vao);
+  glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 3);
+  return true;
+}

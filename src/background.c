@@ -18,11 +18,13 @@ static const char *vert_shader_src =
     "layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;\n"
     "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
     "\n"
+		"\n"
     "out vec2 texCoord;\n"
     "\n"
     "void main()\n"
     "{\n"
-    "    gl_Position = projection * model * vec4(aPos, 0.0, 1.0);\n"
+		"    vec2 worldPos = aPos + vec2(50.0 * gl_InstanceID, 0);\n"
+    "    gl_Position = projection * model * vec4(worldPos, 0.0, 1.0);\n"
     "    texCoord = vec2(aTexCoord.x * (64.0 / 4096.0), aTexCoord.y * (64.0 / 576.0));\n"
     "}\n";
 
@@ -63,5 +65,5 @@ struct gf_background *gf_background_create() {
 
 void gf_background_draw(struct gf_background *background) {
   gf_obj_commit_state(background->obj);
-  gf_obj_draw(background->obj);
+  gf_obj_draw_instanced(background->obj);
 }
