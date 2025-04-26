@@ -58,11 +58,11 @@ build/protocols/src/tablet.c: /usr/share/wayland-protocols/stable/tablet/tablet-
 build/protocols/tablet.o: build/protocols/src/tablet.c
 	gcc $< -c $(CFLAGS) -o $@
 
-eglintro: $(OBJECTS) build/protocols/xdg-shell.o build/protocols/cursor-shape.o build/protocols/tablet.o
+factoriclone: $(OBJECTS) build/protocols/xdg-shell.o build/protocols/cursor-shape.o build/protocols/tablet.o
 	gcc $^ $(CFLAGS) -o $@
 
-run: eglintro
-	./eglintro
+run: factoriclone
+	./factoriclone
 
 # Test
 test: build/test/test
