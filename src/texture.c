@@ -6,14 +6,29 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+struct gf_texture_map_item {
+  bool initialized;
+  char *img_path;
+  struct gf_texture texture;
+};
+
+static struct gf_texture_map_item texture_map[] = {
+    [GF_TEXTURE_FACTORIO_ICON] = {.initialized = false,
+                                  .img_path    = "static/factorio-icon.png"},
+    [GF_TEXTURE_GRASS_1]       = {.initialized = false,
+                                  .img_path    = "static/grass-1.png"}};
+
 void gf_stbi_setup() {
   stbi_set_flip_vertically_on_load(true);
 }
 
-void gf_load_texture(struct gf_texture *texture, char *img_path) {
+static void gf_texture_load(struct gf_texture_map_item *texture_map_item) {
+  struct gf_texture *texture = &texture_map_item->texture;
+
+  // Texture bit depth is always 8.
   texture->bit_depth = 8;
-  u_int8_t *img_data = stbi_load(img_path, &texture->width, &texture->height,
-                                 &texture->num_channels, 0);
+  u_int8_t *img_data = stbi_load(texture_map_item->img_path, &texture->width,
+                                 &texture->height, &texture->num_channels, 0);
   assert(img_data != NULL);
   assert(texture->num_channels == 4);
   glCreateTextures(GL_TEXTURE_2D, 1, &texture->gl_name);
@@ -28,4 +43,14 @@ void gf_load_texture(struct gf_texture *texture, char *img_path) {
                       texture->height, GL_RGBA, GL_UNSIGNED_BYTE, img_data);
 
   stbi_image_free(img_data);
+  texture_map_item->initialized = true;
+}
+
+//! Lazy loads the given texture type.
+const struct gf_texture *gf_texture_get(enum gf_texture_type type) {
+  struct gf_texture_map_item *texture_map_item = &texture_map[type];
+  if (!texture_map_item->initialized) {
+    gf_texture_load(texture_map_item);
+  }
+  return &texture_map_item->texture;
 }

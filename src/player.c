@@ -28,7 +28,6 @@ enum gf_player_input_state {
 
 struct gf_player {
   struct gf_obj *obj;
-  struct gf_texture texture;
   vec2s movement;
   enum gf_player_input_state input_state;
 };
@@ -101,7 +100,6 @@ struct gf_player *gf_player_create() {
 
   struct gf_player *player = &gf_player_list.items[gf_player_list.count++];
 
-  gf_load_texture(&player->texture, PLAYER_TEXTURE_PATH);
   player->input_state = 0b0000;
   player->movement    = (vec2s){.x = 0.0, .y = 0.0};
 
@@ -109,7 +107,7 @@ struct gf_player *gf_player_create() {
   struct gf_shader *shader =
       gf_compile_shaders(vert_shader_src, frag_shader_src);
   gf_obj_set_shader(player->obj, shader);
-  gf_obj_set_texture(player->obj, "playerTex", &player->texture);
+  gf_obj_set_texture(player->obj, "playerTex", GF_TEXTURE_FACTORIO_ICON);
   gf_obj_commit_state(player->obj);
 
   return player;

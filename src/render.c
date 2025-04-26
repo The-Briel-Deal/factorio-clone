@@ -59,7 +59,7 @@ struct gf_obj {
     } transform;
   } state;
   struct gf_shader *shader;
-  struct gf_texture *texture;
+  const struct gf_texture *texture;
   int texture_location;
 };
 
@@ -215,11 +215,8 @@ bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
 }
 
 bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
-                        struct gf_texture *texture) {
-  if (obj->texture == texture) {
-    return false;
-  }
-  obj->texture          = texture;
+                        enum gf_texture_type type) {
+  obj->texture          = gf_texture_get(type);
   obj->texture_location = glGetUniformLocation(obj->shader->program, name);
   return true;
 }

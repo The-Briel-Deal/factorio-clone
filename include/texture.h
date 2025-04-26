@@ -10,10 +10,15 @@ struct gf_texture {
   GLuint gl_name;
   int height;
   int width;
-	int num_channels;
-	int bit_depth;
+  int num_channels;
+  int bit_depth;
 };
 
-void gf_load_texture(struct gf_texture *texture, char *img_path);
+enum gf_texture_type {
+  GF_TEXTURE_FACTORIO_ICON,
+  GF_TEXTURE_GRASS_1,
+};
+
+const struct gf_texture *gf_texture_get(enum gf_texture_type type);
 
 #endif

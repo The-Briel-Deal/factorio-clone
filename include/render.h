@@ -36,7 +36,7 @@ void gf_shader_commit_state(struct gf_shader *shader);
 struct gf_obj *gf_obj_create_box();
 bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader);
 bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
-                        struct gf_texture *texture);
+                        enum gf_texture_type type);
 
 void gf_obj_set_uniform_int(struct gf_obj *obj, GLint location, GLint value);
 
