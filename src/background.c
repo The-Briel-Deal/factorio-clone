@@ -23,8 +23,8 @@ static const char *vert_shader_src =
     "\n"
     "void main()\n"
     "{\n"
-		"    vec2 worldPos = aPos + vec2(150.0 * gl_InstanceID, 0);\n"
-    "    gl_Position = projection * model * vec4(worldPos, 0.0, 1.0);\n"
+		// We need to apply the offset after scaling occurs to prevent scaling shooting the tile offscreen.
+    "    gl_Position = projection * ((model * vec4(aPos, 0.0, 1.0)) + vec4(150.0 * gl_InstanceID,0,0,0));\n"
     "    texCoord = vec2(aTexCoord.x * (64.0 / 4096.0), aTexCoord.y * (64.0 / 576.0));\n"
     "}\n";
 
@@ -58,6 +58,7 @@ struct gf_background *gf_background_create() {
 
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
   gf_obj_set_pos(background->obj, (tf_pos){500, 500});
+	gf_obj_set_scale(background->obj, (tf_scale){128, 128});
   gf_obj_commit_state(background->obj);
 
   return background;

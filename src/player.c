@@ -101,6 +101,7 @@ struct gf_player *gf_player_create() {
   player->movement    = (vec2s){.x = 0.0, .y = 0.0};
 
   player->obj = gf_obj_create_box();
+  gf_obj_set_scale(player->obj, (vec2s){100, 100});
   struct gf_shader *shader =
       gf_compile_shaders(vert_shader_src, frag_shader_src);
   gf_obj_set_shader(player->obj, shader);
