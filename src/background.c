@@ -66,5 +66,5 @@ struct gf_background *gf_background_create() {
 
 void gf_background_draw(struct gf_background *background) {
   gf_obj_commit_state(background->obj);
-  gf_obj_draw_instanced(background->obj);
+  gf_obj_draw_instanced(background->obj, 10);
 }

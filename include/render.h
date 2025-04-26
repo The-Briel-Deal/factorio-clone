@@ -52,7 +52,7 @@ void gf_obj_rotate_by(struct gf_obj *obj, radians rotation);
 
 void gf_obj_commit_state(struct gf_obj *obj);
 bool gf_obj_draw(struct gf_obj *obj);
-bool gf_obj_draw_instanced(struct gf_obj *obj);
+bool gf_obj_draw_instanced(struct gf_obj *obj, int instance_count);
 
 struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
                                      const char *frag_shader_src);
