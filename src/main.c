@@ -12,6 +12,7 @@
 #include <wayland-egl.h>
 #include <wayland-util.h>
 
+#include "background.h"
 #include "egl.h"
 #include "log.h"
 #include "player.h"
@@ -38,6 +39,8 @@ int main() {
   struct gf_player *player = gf_player_create();
   gf_window_register_input_listener(gf_player_input_listener, player);
 
+  struct gf_background *background = gf_background_create();
+
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
 
@@ -49,6 +52,8 @@ int main() {
     glClearColor(1.0, 1.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     glFlush();
+
+		gf_background_draw(background);
 
     get_dtime(&new_time);
 

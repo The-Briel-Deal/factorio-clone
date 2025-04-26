@@ -1,12 +1,15 @@
 
 #include "common.h"
+#include "gf_math.h"
 #include "log.h"
 #include "render.h"
 #include "texture.h"
 struct gf_background {
   struct gf_obj *obj;
 };
+
 STATIC_LIST(gf_background_list, struct gf_background, 128)
+
 
 static const char *vert_shader_src =
     "#version 450 core\n"
@@ -20,7 +23,7 @@ static const char *vert_shader_src =
     "void main()\n"
     "{\n"
     "    gl_Position = projection * model * vec4(aPos, 0.0, 1.0);\n"
-		"    texCoord = aTexCoord;\n"
+		"    texCoord = aTexCoord / 10.0;\n"
     "}\n";
 
 static const char *frag_shader_src =
@@ -32,7 +35,7 @@ static const char *frag_shader_src =
     "\n"
     "void main()\n"
     "{\n"
-    "    FragColor = texture(playerTex, texCoord);\n"
+    "    FragColor = texture(backgroundTex, texCoord);\n"
     "}\n";
 
 struct gf_background *gf_background_create() {
@@ -52,6 +55,13 @@ struct gf_background *gf_background_create() {
   gf_obj_set_shader(background->obj, shader);
 
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
+  gf_obj_set_pos(background->obj, (tf_pos){500, 500});
+  gf_obj_commit_state(background->obj);
 
   return background;
+}
+
+void gf_background_draw(struct gf_background *background) {
+  gf_obj_commit_state(background->obj);
+  gf_obj_draw(background->obj);
 }
