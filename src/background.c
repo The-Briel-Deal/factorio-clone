@@ -1,9 +1,9 @@
-
 #include "common.h"
 #include "gf_math.h"
 #include "log.h"
 #include "render.h"
 #include "texture.h"
+
 struct gf_background {
   struct gf_obj *obj;
 };
