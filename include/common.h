@@ -15,7 +15,6 @@
 
 #define GF_UNIFORM_PROJECTION_MAT_LOCATION 0
 #define GF_UNIFORM_TRANSFORM_MAT_LOCATION  1
-#define GF_UNIFORM_PLAYER_TEX_LOCATION     2
 
 #define STR_HELPER(val)                    #val
 #define TO_STR(val)                        STR_HELPER(val)

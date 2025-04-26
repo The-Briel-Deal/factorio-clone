@@ -34,30 +34,27 @@ struct gf_player {
 
 STATIC_LIST(gf_player_list, struct gf_player, 128)
 
-const char *vert_shader_src =
+static const char *vert_shader_src =
     "#version 450 core\n"
     "layout (location = " TO_STR(GF_ATTRIB_VERT_LOCATION) ") in vec2 aPos;\n"
     "layout (location = " TO_STR(GF_ATTRIB_TEX_COORD_LOCATION) ") in vec2 aTexCoord;\n"
 		"layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;"
 		"layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;"
 		"\n"
-    // "out vec4 vertexColor;\n"
 		"out vec2 texCoord;\n"
     "\n"
     "void main()\n"
     "{\n"
     "    gl_Position = projection * model * vec4(aPos, 0.0, 1.0);\n"
-    // "    vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
 		"    texCoord = aTexCoord;\n"
     "}\n";
 
-const char *frag_shader_src =
+static const char *frag_shader_src =
     "#version 450 core\n"
-    // "in vec4 vertexColor;\n"
     "in vec2 texCoord;\n"
     "out vec4 FragColor;\n"
     "\n"
-    "layout (location = " TO_STR(GF_UNIFORM_PLAYER_TEX_LOCATION) ") uniform sampler2D playerTex;\n"
+    "uniform sampler2D playerTex;\n"
     "\n"
     "void main()\n"
     "{\n"
