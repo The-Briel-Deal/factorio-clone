@@ -61,7 +61,6 @@ build/protocols/tablet.o: build/protocols/src/tablet.c
 build/factoriclone: $(OBJECTS) build/protocols/xdg-shell.o build/protocols/cursor-shape.o build/protocols/tablet.o
 	gcc $^ $(CFLAGS) -o $@
 
-
 # Test
 build/test/test: $(TEST_OBJECTS) build/protocols/xdg-shell.o build/protocols/cursor-shape.o build/protocols/tablet.o
 	gcc $^ $(TEST_CFLAGS) -o build/test/test
@@ -73,10 +72,12 @@ build/test/%.o: test/src/%.c $(TEST_HEADERS) | build/ build/test/
 build/test/:
 	mkdir -p build/test
 
-.PHONY: factoriclone run test run-test
+.PHONY: factoriclone run test run-test fmt
 factoriclone: build/factoriclone
 run: build/factoriclone
 	exec $<
 test: build/test/test
 run-test: build/test/test
 	exec $<
+fmt:
+	clang-format -i ./include/* ./src/* ./test/src/* ./test/include/*
