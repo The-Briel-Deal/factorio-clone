@@ -53,7 +53,7 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
     glFlush();
 
-		gf_background_draw(background);
+    gf_background_draw(background);
 
     get_dtime(&new_time);
 

@@ -58,7 +58,7 @@ struct gf_background *gf_background_create() {
 
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
   gf_obj_set_pos(background->obj, (tf_pos){500, 500});
-	gf_obj_set_scale(background->obj, (tf_scale){128, 128});
+  gf_obj_set_scale(background->obj, (tf_scale){128, 128});
   gf_obj_commit_state(background->obj);
 
   return background;

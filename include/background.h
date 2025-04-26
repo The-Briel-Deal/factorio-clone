@@ -5,6 +5,6 @@ struct gf_background;
 
 struct gf_background *gf_background_create();
 
-void gf_background_draw(struct gf_background *background) ;
+void gf_background_draw(struct gf_background *background);
 
 #endif
