@@ -13,12 +13,12 @@ STATIC_LIST(gf_background_list, struct gf_background, 128)
 
 static const char *vert_shader_src =
     "#version 450 core\n"
+    "\n"
     "layout (location = " TO_STR(GF_ATTRIB_VERT_LOCATION) ") in vec2 aPos;\n"
     "layout (location = " TO_STR(GF_ATTRIB_TEX_COORD_LOCATION) ") in vec2 aTexCoord;\n"
     "layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;\n"
     "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
     "\n"
-		"\n"
     "out vec2 texCoord;\n"
     "\n"
     "void main()\n"
@@ -61,7 +61,7 @@ struct gf_background *gf_background_create() {
   gf_obj_set_shader(background->obj, shader);
 
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
-  gf_obj_set_pos(background->obj, (tf_pos){500, 500});
+  gf_obj_set_pos(background->obj, (tf_pos){64, 64});
   gf_obj_set_scale(background->obj, (tf_scale){128, 128});
   gf_obj_commit_state(background->obj);
 
