@@ -46,8 +46,8 @@ bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
 
 
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
-                          GLuint attr_location, GLenum type, const void *data,
-                          int size);
+                          GLuint attr_location, GLenum type);
+void gf_obj_update_buffer_data(GLuint buffer, const void *data, int size);
 void gf_obj_set_binding_divisor(const struct gf_obj *obj, GLuint binding_index,
                                 GLuint divisor);
 

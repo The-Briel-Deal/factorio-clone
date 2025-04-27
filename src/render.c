@@ -207,11 +207,11 @@ struct gf_obj *gf_obj_create_box() {
 }
 
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
-                          GLuint attr_location, GLenum type, const void *data,
-                          int size) {
+                          GLuint attr_location, GLenum type) {
   GLuint instanced_attr_buffer;
   glCreateBuffers(1, &instanced_attr_buffer);
-  glNamedBufferStorage(instanced_attr_buffer, size, data,
+  // TODO: Use an argument for initial size.
+  glNamedBufferStorage(instanced_attr_buffer, 256 * sizeof(int), NULL,
                        GL_DYNAMIC_STORAGE_BIT);
   // TODO: Use an argument for stride.
   glVertexArrayVertexBuffer(obj->vao, 1, instanced_attr_buffer, 0, 1);
@@ -223,8 +223,14 @@ GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
   return instanced_attr_buffer;
 }
 
-void gf_obj_set_attr_divisor(const struct gf_obj *obj, GLuint binding_index,
-                             GLuint divisor) {
+void gf_obj_update_buffer_data(GLuint buffer, const void *data, int size) {
+  if (size != 0) {
+    glNamedBufferSubData(buffer, 0, size, data);
+  }
+}
+
+void gf_obj_set_binding_divisor(const struct gf_obj *obj, GLuint binding_index,
+                                GLuint divisor) {
   glVertexArrayBindingDivisor(obj->vao, binding_index, divisor);
 }
 
