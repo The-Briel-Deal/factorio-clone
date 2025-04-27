@@ -211,13 +211,13 @@ GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
   GLuint instanced_attr_buffer;
   glCreateBuffers(1, &instanced_attr_buffer);
   // TODO: Use an argument for initial size.
-  glNamedBufferStorage(instanced_attr_buffer, 256 * sizeof(int), NULL,
-                       GL_DYNAMIC_STORAGE_BIT);
+  glNamedBufferData(instanced_attr_buffer, 128 * sizeof(int), NULL,
+                       GL_DYNAMIC_DRAW);
   // TODO: Use an argument for stride.
-  glVertexArrayVertexBuffer(obj->vao, 1, instanced_attr_buffer, 0, 1);
+  glVertexArrayVertexBuffer(obj->vao, 1, instanced_attr_buffer, 0, 4);
   glEnableVertexArrayAttrib(obj->vao, attr_location);
   // TODO: Use an argument for the size of a single attrib.
-  glVertexArrayAttribFormat(obj->vao, attr_location, 1, type, false, 0);
+  glVertexArrayAttribIFormat(obj->vao, attr_location, 1, type, 0);
   glVertexArrayAttribBinding(obj->vao, attr_location, 1);
 
   return instanced_attr_buffer;
@@ -225,7 +225,7 @@ GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
 
 void gf_obj_update_buffer_data(GLuint buffer, const void *data, int size) {
   if (size != 0) {
-    glNamedBufferSubData(buffer, 0, size, data);
+    glNamedBufferSubData(buffer, 0, 128 * sizeof(int), data);
   }
 }
 

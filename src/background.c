@@ -4,6 +4,7 @@
 #include "render.h"
 #include "texture.h"
 #include <GL/gl.h>
+#include <GL/glext.h>
 #define GF_BACKGROUND_ATTRIB_TEST_INDEX_LOCATION 2
 
 #define GF_BACKGROUND_UNIFORM_TILE_SIZE          3
@@ -37,7 +38,6 @@ static const char *vert_shader_src =
     "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_WIDTH) ") uniform int maxTileWidth;\n"
     "\n"
     "out vec2 texCoord;\n"
-    "out vec4 testColor;\n"
     "\n"
     "void main()\n"
     "{\n"
@@ -50,7 +50,6 @@ static const char *vert_shader_src =
     "    vec4 offsetWorldPosition = worldPosition + tileOffset;\n"
     "    gl_Position = projection * offsetWorldPosition;\n"
     "    texCoord = vec2(aTexCoord.x * (256.0 / 4096.0), aTexCoord.y * (256.0 / 576.0));\n"
-    "    testColor = vec4(0.01 * aTestIndex, 0.0, 0.0, 0.0);\n"
     "}\n";
 
 static const char *frag_shader_src =
@@ -63,7 +62,7 @@ static const char *frag_shader_src =
     "\n"
     "void main()\n"
     "{\n"
-    "    FragColor = mix(texture(backgroundTex, texCoord), testColor, 0.5);\n"
+    "    FragColor = texture(backgroundTex, texCoord);\n"
     "}\n";
 
 bool gf_background_commit_state(struct gf_background *background) {
@@ -83,16 +82,16 @@ bool gf_background_commit_state(struct gf_background *background) {
       test_buf[i] = i;
     }
     assert(background->background_state.tiles_to_fill_screen < 128);
-    gf_obj_update_buffer_data(
-        background->instance_attr_buf_object, test_buf,
-        background->background_state.tiles_to_fill_screen);
+    gf_obj_update_buffer_data(background->instance_attr_buf_object, test_buf,
+                              sizeof(test_buf));
     gf_obj_set_binding_divisor(background->obj,
-                               background->instance_attr_buf_binding_index, 6);
+                               background->instance_attr_buf_binding_index, 1);
 
     background->background_state.dirty = false;
     return true;
   }
   gf_obj_commit_state(background->obj);
+
   return false;
 }
 
