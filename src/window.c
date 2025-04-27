@@ -96,7 +96,7 @@ static void xdg_toplevel_configure(void *data,
     glViewport(0, 0, w, h);
     wl_egl_window_resize(window->wl_egl_window, w, h, 0, 0);
     wl_surface_commit(window->surface);
-    gf_draw_update_window_size(w, h);
+    gf_render_update_window_size(w, h);
   }
 }
 static void xdg_toplevel_wm_capabilities(void *data,

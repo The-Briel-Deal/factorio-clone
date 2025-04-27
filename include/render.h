@@ -30,7 +30,7 @@ struct gf_obj;
 struct gf_shader;
 
 
-bool gf_draw_update_window_size(int32_t height, int32_t width);
+bool gf_render_update_window_size(int32_t height, int32_t width);
 void gf_shader_commit_state(struct gf_shader *shader);
 
 struct gf_obj *gf_obj_create_box();

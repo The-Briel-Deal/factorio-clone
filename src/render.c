@@ -65,7 +65,7 @@ struct gf_obj {
 
 STATIC_LIST(gf_obj_list, struct gf_obj, OBJ_LIST_MAX)
 
-bool gf_draw_update_window_size(int32_t width, int32_t height) {
+bool gf_render_update_window_size(int32_t width, int32_t height) {
   if (height == render_state.viewport.height &&
       width == render_state.viewport.width) {
     return false;
