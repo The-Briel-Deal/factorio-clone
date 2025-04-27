@@ -7,7 +7,7 @@
 #define GF_BACKGROUND_UNIFORM_TILE_SIZE  3
 #define GF_BACKGROUND_UNIFORM_TILE_WIDTH 4
 
-#define GF_BACKGROUND_DEFAULT_TILE_SIZE  128
+#define GF_BACKGROUND_DEFAULT_TILE_SIZE  512
 
 struct gf_background {
   struct gf_obj *obj;
