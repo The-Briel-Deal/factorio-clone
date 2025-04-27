@@ -52,6 +52,29 @@ static const char *frag_shader_src =
     "    FragColor = texture(backgroundTex, texCoord);\n"
     "}\n";
 
+bool gf_background_commit_state(struct gf_background *background) {
+  if (background->background_state.dirty) {
+    gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_SIZE,
+                   background->background_state.tileSize);
+    gf_obj_set_scale(background->obj,
+                     (tf_scale){background->background_state.tileSize,
+                                background->background_state.tileSize});
+    float starting_position = background->background_state.tileSize / 2.0f;
+    gf_obj_set_pos(background->obj,
+                   (tf_pos){starting_position, starting_position});
+    background->background_state.dirty = false;
+    return true;
+  }
+  gf_obj_commit_state(background->obj);
+  return false;
+}
+
+static void gf_background_set_tile_size(struct gf_background *background,
+                                        int tile_size) {
+  background->background_state.tileSize = tile_size;
+  background->background_state.dirty    = true;
+}
+
 struct gf_background *gf_background_create() {
   if (gf_background_list.count + 1 >= gf_background_list.capacity) {
     gf_log(DEBUG_LOG,
@@ -62,25 +85,19 @@ struct gf_background *gf_background_create() {
   }
   struct gf_background *background =
       &gf_background_list.items[gf_background_list.count++];
+  gf_background_set_tile_size(background, GF_BACKGROUND_DEFAULT_TILE_SIZE);
 
   background->obj = gf_obj_create_box();
   struct gf_shader *shader =
       gf_compile_shaders(vert_shader_src, frag_shader_src);
   gf_obj_set_shader(background->obj, shader);
-
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
-  gf_obj_set_pos(background->obj, (tf_pos){64, 64});
-  gf_obj_set_scale(background->obj,
-                   (tf_scale){GF_BACKGROUND_DEFAULT_TILE_SIZE,
-                              GF_BACKGROUND_DEFAULT_TILE_SIZE});
-  gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_SIZE,
-                 GF_BACKGROUND_DEFAULT_TILE_SIZE);
-  gf_obj_commit_state(background->obj);
+  gf_background_commit_state(background);
 
   return background;
 }
 
 void gf_background_draw(struct gf_background *background) {
-  gf_obj_commit_state(background->obj);
+  gf_background_commit_state(background);
   gf_obj_draw_instanced(background->obj, 10);
 }
