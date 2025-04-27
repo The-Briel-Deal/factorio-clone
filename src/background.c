@@ -13,7 +13,9 @@ struct gf_background {
   struct gf_obj *obj;
   struct gf_background_state {
     bool dirty;
-    int tileSize;
+    int tile_size;
+    int tiles_to_fill_screen;
+    int tiles_per_row;
   } background_state;
 };
 
@@ -59,11 +61,13 @@ static const char *frag_shader_src =
 bool gf_background_commit_state(struct gf_background *background) {
   if (background->background_state.dirty) {
     gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_SIZE,
-                   background->background_state.tileSize);
+                   background->background_state.tile_size);
+    gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_WIDTH,
+                   background->background_state.tiles_per_row);
     gf_obj_set_scale(background->obj,
-                     (tf_scale){background->background_state.tileSize,
-                                background->background_state.tileSize});
-    float starting_position = background->background_state.tileSize / 2.0f;
+                     (tf_scale){background->background_state.tile_size,
+                                background->background_state.tile_size});
+    float starting_position = background->background_state.tile_size / 2.0f;
     gf_obj_set_pos(background->obj,
                    (tf_pos){starting_position, starting_position});
     background->background_state.dirty = false;
@@ -75,8 +79,8 @@ bool gf_background_commit_state(struct gf_background *background) {
 
 static void gf_background_set_tile_size(struct gf_background *background,
                                         int tile_size) {
-  background->background_state.tileSize = tile_size;
-  background->background_state.dirty    = true;
+  background->background_state.tile_size = tile_size;
+  background->background_state.dirty     = true;
 }
 
 struct gf_background *gf_background_create() {
@@ -101,23 +105,27 @@ struct gf_background *gf_background_create() {
   return background;
 }
 
-static int get_tiles_to_fill_screen(int tile_size) {
+static void gf_background_sync_tiles(struct gf_background *background) {
+  const int tile_size = background->background_state.tile_size;
   assert(tile_size != 0);
   const struct viewport_dimensions *viewport = gf_render_get_window_size();
   // Add 1 to height and width to offset int division rounding down.
   int width  = (viewport->width / tile_size) + 1;
   int height = (viewport->height / tile_size) + 1;
 
-  return width * height;
+  int tiles_to_fill_screen = width * height;
+  if (background->background_state.tiles_per_row != width ||
+      background->background_state.tiles_to_fill_screen !=
+          tiles_to_fill_screen) {
+    background->background_state.tiles_per_row        = width;
+    background->background_state.tiles_to_fill_screen = tiles_to_fill_screen;
+    background->background_state.dirty                = true;
+  }
 }
 
 void gf_background_draw(struct gf_background *background) {
+  gf_background_sync_tiles(background);
   gf_background_commit_state(background);
-  int tiles_to_draw =
-      get_tiles_to_fill_screen(background->background_state.tileSize);
-  gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_WIDTH,
-                 (gf_render_get_window_size()->width /
-                  background->background_state.tileSize) +
-                     1);
-  gf_obj_draw_instanced(background->obj, tiles_to_draw);
+  gf_obj_draw_instanced(background->obj,
+                        background->background_state.tiles_to_fill_screen);
 }
