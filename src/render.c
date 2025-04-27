@@ -17,11 +17,6 @@
 
 static const GLuint BOX_INDEX_ORDER[] = {0, 1, 3, 0, 2, 3};
 
-struct viewport_dimensions {
-  int height;
-  int width;
-};
-
 // Shared Global State shared by shaders.
 struct render_state {
   struct viewport_dimensions viewport;
@@ -65,6 +60,7 @@ struct gf_obj {
 
 STATIC_LIST(gf_obj_list, struct gf_obj, OBJ_LIST_MAX)
 
+// TODO: Use a bool to know if viewport in shader is dirty.
 bool gf_render_update_window_size(int32_t width, int32_t height) {
   if (height == render_state.viewport.height &&
       width == render_state.viewport.width) {
@@ -73,6 +69,10 @@ bool gf_render_update_window_size(int32_t width, int32_t height) {
   render_state.viewport =
       (struct viewport_dimensions){.width = width, .height = height};
   return true;
+}
+
+const struct viewport_dimensions *gf_render_get_window_size() {
+	return &render_state.viewport;
 }
 
 void gf_shader_sync_projection_matrix(struct gf_shader *shader) {

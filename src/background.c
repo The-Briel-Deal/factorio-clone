@@ -97,7 +97,19 @@ struct gf_background *gf_background_create() {
   return background;
 }
 
+static int get_tiles_to_fill_screen(int tile_size) {
+  assert(tile_size != 0);
+  const struct viewport_dimensions *viewport = gf_render_get_window_size();
+  // Add 1 to height and width to offset int division rounding down.
+  int width  = (viewport->width / tile_size) + 1;
+  int height = (viewport->height / tile_size) + 1;
+
+  return width * height;
+}
+
 void gf_background_draw(struct gf_background *background) {
   gf_background_commit_state(background);
-  gf_obj_draw_instanced(background->obj, 10);
+  int tiles_to_draw =
+      get_tiles_to_fill_screen(background->background_state.tileSize);
+  gf_obj_draw_instanced(background->obj, tiles_to_draw);
 }
