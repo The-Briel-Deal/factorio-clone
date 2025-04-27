@@ -4,9 +4,10 @@
 #include "render.h"
 #include "texture.h"
 
-#define GF_BACKGROUND_UNIFORM_TILE_SIZE 3
+#define GF_BACKGROUND_UNIFORM_TILE_SIZE  3
+#define GF_BACKGROUND_UNIFORM_TILE_WIDTH 4
 
-#define GF_BACKGROUND_DEFAULT_TILE_SIZE 128
+#define GF_BACKGROUND_DEFAULT_TILE_SIZE  128
 
 struct gf_background {
   struct gf_obj *obj;
@@ -26,12 +27,15 @@ static const char *vert_shader_src =
     "layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;\n"
     "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
     "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_SIZE) ") uniform int tileSize;\n"
+    "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_WIDTH) ") uniform int maxTileWidth;\n"
     "\n"
     "out vec2 texCoord;\n"
     "\n"
     "void main()\n"
     "{\n"
-    "    vec4 tileOffset = vec4(tileSize * gl_InstanceID, 0, 0, 0)\n;"
+    "    int tileWidth = gl_InstanceID % (maxTileWidth);\n"
+    "    int tileHeight = gl_InstanceID / (maxTileWidth);\n"
+    "    vec4 tileOffset = vec4(tileSize * tileWidth, tileSize * tileHeight, 0, 0);\n"
          // We need to apply the offset after transformation occurs to prevent 
          // scaling shooting the tile offscreen.
     "    vec4 worldPosition = model * vec4(aPos, 0.0, 1.0);\n"
@@ -111,5 +115,9 @@ void gf_background_draw(struct gf_background *background) {
   gf_background_commit_state(background);
   int tiles_to_draw =
       get_tiles_to_fill_screen(background->background_state.tileSize);
+  gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_WIDTH,
+                 (gf_render_get_window_size()->width /
+                  background->background_state.tileSize) +
+                     1);
   gf_obj_draw_instanced(background->obj, tiles_to_draw);
 }

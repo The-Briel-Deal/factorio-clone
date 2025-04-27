@@ -72,7 +72,7 @@ bool gf_render_update_window_size(int32_t width, int32_t height) {
 }
 
 const struct viewport_dimensions *gf_render_get_window_size() {
-	return &render_state.viewport;
+  return &render_state.viewport;
 }
 
 void gf_shader_sync_projection_matrix(struct gf_shader *shader) {
