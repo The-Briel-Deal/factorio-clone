@@ -281,6 +281,10 @@ void gf_obj_commit_state(struct gf_obj *obj) {
   gf_shader_commit_state(obj->shader);
 }
 
+void gf_obj_set_int(struct gf_obj *obj, int location, int val) {
+  glProgramUniform1i(obj->shader->program, location, val);
+}
+
 bool gf_obj_draw(struct gf_obj *obj) {
   glUseProgram(obj->shader->program);
   glProgramUniform1i(obj->shader->program, obj->texture_location, 0);

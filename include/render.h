@@ -50,6 +50,8 @@ radians gf_obj_get_rotation(struct gf_obj *obj);
 void gf_obj_set_rotation(struct gf_obj *obj, radians rotation);
 void gf_obj_rotate_by(struct gf_obj *obj, radians rotation);
 
+void gf_obj_set_int(struct gf_obj *obj, int location, int val);
+
 void gf_obj_commit_state(struct gf_obj *obj);
 bool gf_obj_draw(struct gf_obj *obj);
 bool gf_obj_draw_instanced(struct gf_obj *obj, int instance_count);

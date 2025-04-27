@@ -4,12 +4,19 @@
 #include "render.h"
 #include "texture.h"
 
+#define GF_BACKGROUND_UNIFORM_TILE_SIZE 3
+
+#define GF_BACKGROUND_DEFAULT_TILE_SIZE 128
+
 struct gf_background {
   struct gf_obj *obj;
+  struct gf_background_state {
+    bool dirty;
+    int tileSize;
+  } background_state;
 };
 
 STATIC_LIST(gf_background_list, struct gf_background, 128)
-
 
 static const char *vert_shader_src =
     "#version 450 core\n"
@@ -18,12 +25,13 @@ static const char *vert_shader_src =
     "layout (location = " TO_STR(GF_ATTRIB_TEX_COORD_LOCATION) ") in vec2 aTexCoord;\n"
     "layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;\n"
     "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
+    "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_SIZE) ") uniform int tileSize;\n"
     "\n"
     "out vec2 texCoord;\n"
     "\n"
     "void main()\n"
     "{\n"
-    "    vec4 tileOffset = vec4(128.0 * gl_InstanceID, 0, 0, 0)\n;"
+    "    vec4 tileOffset = vec4(tileSize * gl_InstanceID, 0, 0, 0)\n;"
          // We need to apply the offset after transformation occurs to prevent 
          // scaling shooting the tile offscreen.
     "    vec4 worldPosition = model * vec4(aPos, 0.0, 1.0);\n"
@@ -62,7 +70,11 @@ struct gf_background *gf_background_create() {
 
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
   gf_obj_set_pos(background->obj, (tf_pos){64, 64});
-  gf_obj_set_scale(background->obj, (tf_scale){128, 128});
+  gf_obj_set_scale(background->obj,
+                   (tf_scale){GF_BACKGROUND_DEFAULT_TILE_SIZE,
+                              GF_BACKGROUND_DEFAULT_TILE_SIZE});
+  gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_SIZE,
+                 GF_BACKGROUND_DEFAULT_TILE_SIZE);
   gf_obj_commit_state(background->obj);
 
   return background;
