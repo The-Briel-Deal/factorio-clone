@@ -44,6 +44,13 @@ bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader);
 bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
                         enum gf_texture_type type);
 
+
+GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
+                          GLuint attr_location, GLenum type, const void *data,
+                          int size);
+void gf_obj_set_binding_divisor(const struct gf_obj *obj, GLuint binding_index,
+                                GLuint divisor);
+
 void gf_obj_set_uniform_int(struct gf_obj *obj, GLint location, GLint value);
 
 tf_scale gf_obj_get_scale(struct gf_obj *obj);

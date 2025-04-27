@@ -206,6 +206,28 @@ struct gf_obj *gf_obj_create_box() {
   return obj;
 }
 
+GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
+                          GLuint attr_location, GLenum type, const void *data,
+                          int size) {
+  GLuint instanced_attr_buffer;
+  glCreateBuffers(1, &instanced_attr_buffer);
+  glNamedBufferStorage(instanced_attr_buffer, size, data,
+                       GL_DYNAMIC_STORAGE_BIT);
+  // TODO: Use an argument for stride.
+  glVertexArrayVertexBuffer(obj->vao, 1, instanced_attr_buffer, 0, 1);
+  glEnableVertexArrayAttrib(obj->vao, attr_location);
+  // TODO: Use an argument for the size of a single attrib.
+  glVertexArrayAttribFormat(obj->vao, attr_location, 1, type, false, 0);
+  glVertexArrayAttribBinding(obj->vao, attr_location, 1);
+
+  return instanced_attr_buffer;
+}
+
+void gf_obj_set_attr_divisor(const struct gf_obj *obj, GLuint binding_index,
+                             GLuint divisor) {
+  glVertexArrayBindingDivisor(obj->vao, binding_index, divisor);
+}
+
 bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
   if (obj->shader == shader) {
     return false;
