@@ -43,7 +43,7 @@ static const char *vert_shader_src =
     "    vec4 worldPosition = model * vec4(aPos, 0.0, 1.0);\n"
     "    vec4 offsetWorldPosition = worldPosition + tileOffset;\n"
     "    gl_Position = projection * offsetWorldPosition;\n"
-    "    texCoord = vec2(aTexCoord.x * (64.0 / 4096.0), aTexCoord.y * (64.0 / 576.0));\n"
+    "    texCoord = vec2(aTexCoord.x * (256.0 / 4096.0), aTexCoord.y * (256.0 / 576.0));\n"
     "}\n";
 
 static const char *frag_shader_src =
