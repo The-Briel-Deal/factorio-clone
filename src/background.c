@@ -12,6 +12,23 @@
 
 #define GF_BACKGROUND_DEFAULT_TILE_SIZE          512
 
+#define GF_TERRAIN_LOW_RES_1                     0
+#define GF_TERRAIN_LOW_RES_2                     1
+#define GF_TERRAIN_LOW_RES_3                     2
+#define GF_TERRAIN_LOW_RES_4                     3
+#define GF_TERRAIN_LOW_RES_5                     4
+#define GF_TERRAIN_LOW_RES_6                     5
+#define GF_TERRAIN_LOW_RES_7                     6
+#define GF_TERRAIN_LOW_RES_8                     7
+#define GF_TERRAIN_LOW_RES_9                     8
+#define GF_TERRAIN_LOW_RES_10                    9
+#define GF_TERRAIN_LOW_RES_11                    10
+#define GF_TERRAIN_LOW_RES_12                    11
+#define GF_TERRAIN_LOW_RES_13                    12
+#define GF_TERRAIN_LOW_RES_14                    13
+#define GF_TERRAIN_LOW_RES_15                    14
+#define GF_TERRAIN_LOW_RES_16                    15
+
 struct gf_background {
   struct gf_obj *obj;
   GLuint instance_attr_buf_binding_index;
@@ -25,6 +42,41 @@ struct gf_background {
 };
 
 STATIC_LIST(gf_background_list, struct gf_background, 128)
+
+struct gf_terrain_texture_pos {
+  float top;
+  float bottom;
+  float left;
+  float right;
+};
+
+#define TEX_MAP_H  576
+#define TEX_MAP_W  4096
+
+// Normalize height and width to gl coords (0.0-1.0)
+#define NH(height) ((float)height) / ((float)TEX_MAP_H)
+#define NW(width)  ((float)width) / ((float)TEX_MAP_W)
+
+static const struct gf_terrain_texture_pos texture_positions[] = {
+    [GF_TERRAIN_LOW_RES_1] = {.top    = NH(TEX_MAP_H),
+                              .bottom = NH(TEX_MAP_H - 64),
+                              .left   = NW(0),
+                              .right  = NW(64)},
+    //	[GF_TERRAIN_LOW_RES_2]
+    //	[GF_TERRAIN_LOW_RES_3]
+    //	[GF_TERRAIN_LOW_RES_4]
+    //	[GF_TERRAIN_LOW_RES_5]
+    //	[GF_TERRAIN_LOW_RES_6]
+    //	[GF_TERRAIN_LOW_RES_7]
+    //	[GF_TERRAIN_LOW_RES_8]
+    //	[GF_TERRAIN_LOW_RES_9]
+    //	[GF_TERRAIN_LOW_RES_10]
+    //	[GF_TERRAIN_LOW_RES_11]
+    //	[GF_TERRAIN_LOW_RES_12]
+    //	[GF_TERRAIN_LOW_RES_13]
+    //	[GF_TERRAIN_LOW_RES_14]
+    //	[GF_TERRAIN_LOW_RES_15]
+};
 
 static const char *vert_shader_src =
     "#version 450 core\n"
