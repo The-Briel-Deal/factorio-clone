@@ -11,7 +11,7 @@
 #define GF_BACKGROUND_UNIFORM_TILE_WIDTH        4
 #define GF_BACKGROUND_UNIFORM_TEX_MAP           5
 
-#define GF_BACKGROUND_DEFAULT_TILE_SIZE         256
+#define GF_BACKGROUND_DEFAULT_TILE_SIZE         64
 
 #define GF_TERRAIN_LOW_RES_1                    0
 #define GF_TERRAIN_LOW_RES_2                    1
@@ -150,11 +150,10 @@ bool gf_background_commit_state(struct gf_background *background) {
     float starting_position = background->background_state.tile_size / 2.0f;
     gf_obj_set_pos(background->obj,
                    (tf_pos){starting_position, starting_position});
-    int test_buf[128];
+    int test_buf[background->background_state.tiles_to_fill_screen];
     for (int i = 0; i < (sizeof(test_buf) / sizeof(int)); i++) {
       test_buf[i] = GF_TERRAIN_LOW_RES_1;
     }
-    assert(background->background_state.tiles_to_fill_screen < 128);
     gf_obj_update_buffer_data(background->instance_attr_buf_object, test_buf,
                               sizeof(test_buf));
     gf_obj_set_binding_divisor(background->obj,
