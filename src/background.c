@@ -11,7 +11,7 @@
 #define GF_BACKGROUND_UNIFORM_TILE_WIDTH        4
 #define GF_BACKGROUND_UNIFORM_TEX_MAP           5
 
-#define GF_BACKGROUND_DEFAULT_TILE_SIZE         512
+#define GF_BACKGROUND_DEFAULT_TILE_SIZE         256
 
 #define GF_TERRAIN_LOW_RES_1                    0
 #define GF_TERRAIN_LOW_RES_2                    1
