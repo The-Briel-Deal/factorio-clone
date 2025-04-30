@@ -211,10 +211,10 @@ GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
   GLuint instanced_attr_buffer;
   glCreateBuffers(1, &instanced_attr_buffer);
   // TODO: Use an argument for initial size.
-  glNamedBufferData(instanced_attr_buffer, 128 * sizeof(int), NULL,
-                       GL_DYNAMIC_DRAW);
+  glNamedBufferData(instanced_attr_buffer, 1024 * sizeof(uint8_t), NULL,
+                    GL_DYNAMIC_DRAW);
   // TODO: Use an argument for stride.
-  glVertexArrayVertexBuffer(obj->vao, 1, instanced_attr_buffer, 0, 4);
+  glVertexArrayVertexBuffer(obj->vao, 1, instanced_attr_buffer, 0, 1);
   glEnableVertexArrayAttrib(obj->vao, attr_location);
   // TODO: Use an argument for the size of a single attrib.
   glVertexArrayAttribIFormat(obj->vao, attr_location, 1, type, 0);
@@ -225,7 +225,7 @@ GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
 
 void gf_obj_update_buffer_data(GLuint buffer, const void *data, int size) {
   if (size != 0) {
-    glNamedBufferSubData(buffer, 0, 128 * sizeof(int), data);
+    glNamedBufferSubData(buffer, 0, size, data);
   }
 }
 
@@ -312,7 +312,7 @@ void gf_obj_commit_state(struct gf_obj *obj) {
 void gf_obj_set_int(struct gf_obj *obj, int location, int val) {
   glProgramUniform1i(obj->shader->program, location, val);
 }
-void gf_obj_set_vec4v(struct gf_obj *obj, int location, int count, void* val) {
+void gf_obj_set_vec4v(struct gf_obj *obj, int location, int count, void *val) {
   glProgramUniform4fv(obj->shader->program, location, count, val);
 }
 

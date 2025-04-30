@@ -5,6 +5,7 @@
 #include "texture.h"
 #include <GL/gl.h>
 #include <GL/glext.h>
+#include <stdint.h>
 #define GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION 2
 
 #define GF_BACKGROUND_UNIFORM_TILE_SIZE         3
@@ -30,6 +31,7 @@
 #define GF_TERRAIN_LOW_RES_15                   14
 #define GF_TERRAIN_LOW_RES_16                   15
 
+// TODO: Rename `instance_attr_*` to something better.
 struct gf_background {
   struct gf_obj *obj;
   GLuint instance_attr_buf_binding_index;
@@ -37,8 +39,9 @@ struct gf_background {
   struct gf_background_state {
     bool dirty;
     int tile_size;
-    int tiles_to_fill_screen;
+    int tiles_count;
     int tiles_per_row;
+    uint8_t tile_state[1024];
   } background_state;
 };
 
@@ -63,7 +66,10 @@ static const struct gf_terrain_texture_pos texture_positions[] = {
                               .bottom = NH(TEX_MAP_H - 64),
                               .left   = NW(0),
                               .right  = NW(64)},
-    //	[GF_TERRAIN_LOW_RES_2]
+    [GF_TERRAIN_LOW_RES_2] = {.top    = NH(TEX_MAP_H),
+                              .bottom = NH(TEX_MAP_H - 64),
+                              .left   = NW(64 * 1),
+                              .right  = NW(64 * 2)},
     //	[GF_TERRAIN_LOW_RES_3]
     //	[GF_TERRAIN_LOW_RES_4]
     //	[GF_TERRAIN_LOW_RES_5]
@@ -139,6 +145,7 @@ static const char *frag_shader_src =
     "}\n";
 
 bool gf_background_commit_state(struct gf_background *background) {
+  bool set = false;
   if (background->background_state.dirty) {
     gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_SIZE,
                    background->background_state.tile_size);
@@ -150,27 +157,30 @@ bool gf_background_commit_state(struct gf_background *background) {
     float starting_position = background->background_state.tile_size / 2.0f;
     gf_obj_set_pos(background->obj,
                    (tf_pos){starting_position, starting_position});
-    int test_buf[background->background_state.tiles_to_fill_screen];
-    for (int i = 0; i < (sizeof(test_buf) / sizeof(int)); i++) {
-      test_buf[i] = GF_TERRAIN_LOW_RES_1;
-    }
-    gf_obj_update_buffer_data(background->instance_attr_buf_object, test_buf,
-                              sizeof(test_buf));
+    gf_obj_update_buffer_data(background->instance_attr_buf_object,
+                              background->background_state.tile_state,
+                              sizeof(background->background_state.tile_state));
     gf_obj_set_binding_divisor(background->obj,
                                background->instance_attr_buf_binding_index, 1);
 
     background->background_state.dirty = false;
-    return true;
+    set                                = true;
   }
   gf_obj_commit_state(background->obj);
 
-  return false;
+  return set;
 }
 
 static void gf_background_set_tile_size(struct gf_background *background,
                                         int tile_size) {
   background->background_state.tile_size = tile_size;
   background->background_state.dirty     = true;
+}
+static void gf_background_init_tiles(struct gf_background *background) {
+  for (int i = 0; i < sizeof(background->background_state.tile_state); i++) {
+    background->background_state.tile_state[i] = i % 2;
+  }
+  background->background_state.dirty = true;
 }
 
 struct gf_background *gf_background_create() {
@@ -184,6 +194,7 @@ struct gf_background *gf_background_create() {
   struct gf_background *background =
       &gf_background_list.items[gf_background_list.count++];
   gf_background_set_tile_size(background, GF_BACKGROUND_DEFAULT_TILE_SIZE);
+	gf_background_init_tiles(background);
 
   background->obj = gf_obj_create_box();
   struct gf_shader *shader =
@@ -198,7 +209,7 @@ struct gf_background *gf_background_create() {
   background->instance_attr_buf_binding_index = 1;
   background->instance_attr_buf_object        = gf_obj_create_attr(
       background->obj, background->instance_attr_buf_binding_index,
-      GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION, GL_INT);
+      GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION, GL_BYTE);
 
   gf_background_commit_state(background);
 
@@ -215,11 +226,10 @@ static void gf_background_sync_tiles(struct gf_background *background) {
 
   int tiles_to_fill_screen = width * height;
   if (background->background_state.tiles_per_row != width ||
-      background->background_state.tiles_to_fill_screen !=
-          tiles_to_fill_screen) {
-    background->background_state.tiles_per_row        = width;
-    background->background_state.tiles_to_fill_screen = tiles_to_fill_screen;
-    background->background_state.dirty                = true;
+      background->background_state.tiles_count != tiles_to_fill_screen) {
+    background->background_state.tiles_per_row = width;
+    background->background_state.tiles_count   = tiles_to_fill_screen;
+    background->background_state.dirty         = true;
   }
 }
 
@@ -227,5 +237,5 @@ void gf_background_draw(struct gf_background *background) {
   gf_background_sync_tiles(background);
   gf_background_commit_state(background);
   gf_obj_draw_instanced(background->obj,
-                        background->background_state.tiles_to_fill_screen);
+                        background->background_state.tiles_count);
 }
