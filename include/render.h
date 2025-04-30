@@ -51,8 +51,6 @@ void gf_obj_update_buffer_data(GLuint buffer, const void *data, int size);
 void gf_obj_set_binding_divisor(const struct gf_obj *obj, GLuint binding_index,
                                 GLuint divisor);
 
-void gf_obj_set_uniform_int(struct gf_obj *obj, GLint location, GLint value);
-
 tf_scale gf_obj_get_scale(struct gf_obj *obj);
 void gf_obj_set_scale(struct gf_obj *obj, tf_scale scale);
 
@@ -64,6 +62,7 @@ void gf_obj_set_rotation(struct gf_obj *obj, radians rotation);
 void gf_obj_rotate_by(struct gf_obj *obj, radians rotation);
 
 void gf_obj_set_int(struct gf_obj *obj, int location, int val);
+void gf_obj_set_vec4v(struct gf_obj *obj, int location, int count, void *val);
 
 void gf_obj_commit_state(struct gf_obj *obj);
 bool gf_obj_draw(struct gf_obj *obj);

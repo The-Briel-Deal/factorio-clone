@@ -5,29 +5,30 @@
 #include "texture.h"
 #include <GL/gl.h>
 #include <GL/glext.h>
-#define GF_BACKGROUND_ATTRIB_TEST_INDEX_LOCATION 2
+#define GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION 2
 
-#define GF_BACKGROUND_UNIFORM_TILE_SIZE          3
-#define GF_BACKGROUND_UNIFORM_TILE_WIDTH         4
+#define GF_BACKGROUND_UNIFORM_TILE_SIZE         3
+#define GF_BACKGROUND_UNIFORM_TILE_WIDTH        4
+#define GF_BACKGROUND_UNIFORM_TEX_MAP           5
 
-#define GF_BACKGROUND_DEFAULT_TILE_SIZE          512
+#define GF_BACKGROUND_DEFAULT_TILE_SIZE         512
 
-#define GF_TERRAIN_LOW_RES_1                     0
-#define GF_TERRAIN_LOW_RES_2                     1
-#define GF_TERRAIN_LOW_RES_3                     2
-#define GF_TERRAIN_LOW_RES_4                     3
-#define GF_TERRAIN_LOW_RES_5                     4
-#define GF_TERRAIN_LOW_RES_6                     5
-#define GF_TERRAIN_LOW_RES_7                     6
-#define GF_TERRAIN_LOW_RES_8                     7
-#define GF_TERRAIN_LOW_RES_9                     8
-#define GF_TERRAIN_LOW_RES_10                    9
-#define GF_TERRAIN_LOW_RES_11                    10
-#define GF_TERRAIN_LOW_RES_12                    11
-#define GF_TERRAIN_LOW_RES_13                    12
-#define GF_TERRAIN_LOW_RES_14                    13
-#define GF_TERRAIN_LOW_RES_15                    14
-#define GF_TERRAIN_LOW_RES_16                    15
+#define GF_TERRAIN_LOW_RES_1                    0
+#define GF_TERRAIN_LOW_RES_2                    1
+#define GF_TERRAIN_LOW_RES_3                    2
+#define GF_TERRAIN_LOW_RES_4                    3
+#define GF_TERRAIN_LOW_RES_5                    4
+#define GF_TERRAIN_LOW_RES_6                    5
+#define GF_TERRAIN_LOW_RES_7                    6
+#define GF_TERRAIN_LOW_RES_8                    7
+#define GF_TERRAIN_LOW_RES_9                    8
+#define GF_TERRAIN_LOW_RES_10                   9
+#define GF_TERRAIN_LOW_RES_11                   10
+#define GF_TERRAIN_LOW_RES_12                   11
+#define GF_TERRAIN_LOW_RES_13                   12
+#define GF_TERRAIN_LOW_RES_14                   13
+#define GF_TERRAIN_LOW_RES_15                   14
+#define GF_TERRAIN_LOW_RES_16                   15
 
 struct gf_background {
   struct gf_obj *obj;
@@ -78,21 +79,30 @@ static const struct gf_terrain_texture_pos texture_positions[] = {
     //	[GF_TERRAIN_LOW_RES_15]
 };
 
+// TODO: Look into using constant expressions in C
+#define TEXTURE_POSITIONS_LEN 16
+
 static const char *vert_shader_src =
     "#version 450 core\n"
     "\n"
     "layout (location = " TO_STR(GF_ATTRIB_VERT_LOCATION) ") in vec2 aPos;\n"
     "layout (location = " TO_STR(GF_ATTRIB_TEX_COORD_LOCATION) ") in vec2 aTexCoord;\n"
-    "layout (location = " TO_STR(GF_BACKGROUND_ATTRIB_TEST_INDEX_LOCATION) ") in int aTestIndex;\n"
+    "layout (location = " TO_STR(GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION) ") in int aTexIndex;\n"
     "layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;\n"
     "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
     "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_SIZE) ") uniform int tileSize;\n"
     "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_WIDTH) ") uniform int maxTileWidth;\n"
+    "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TEX_MAP) ") uniform vec4 textureMap[" TO_STR(TEXTURE_POSITIONS_LEN) "];\n"
     "\n"
     "out vec2 texCoord;\n"
     "\n"
     "void main()\n"
     "{\n"
+		"    vec4 texCoords = textureMap[aTexIndex];\n"
+		"    float texTop = texCoords.x;\n"
+		"    float texBottom = texCoords.y;\n"
+		"    float texLeft = texCoords.z;\n"
+		"    float texRight = texCoords.w;\n"
     "    int tileWidth = gl_InstanceID % (maxTileWidth);\n"
     "    int tileHeight = gl_InstanceID / (maxTileWidth);\n"
     "    vec4 tileOffset = vec4(tileSize * tileWidth, tileSize * tileHeight, 0, 0);\n"
@@ -101,7 +111,18 @@ static const char *vert_shader_src =
     "    vec4 worldPosition = model * vec4(aPos, 0.0, 1.0);\n"
     "    vec4 offsetWorldPosition = worldPosition + tileOffset;\n"
     "    gl_Position = projection * offsetWorldPosition;\n"
-    "    texCoord = vec2(aTexCoord.x * (256.0 / 4096.0), aTexCoord.y * (256.0 / 576.0));\n"
+		"    texCoord = vec2(0.0, 0.0);\n"
+		"    if (aTexCoord.x == 0.0) {\n"
+		"        texCoord.x = texLeft;\n"
+		"    } else {\n"
+		"        texCoord.x = texRight;"
+		"    }\n"
+		"    if (aTexCoord.y == 0.0) {\n"
+		"        texCoord.y = texBottom;\n"
+		"    } else {\n"
+		"        texCoord.y = texTop;"
+		"    }\n"
+    // "    texCoord = vec2(aTexCoord.x * (256.0 / 4096.0), aTexCoord.y * (256.0 / 576.0));\n"
     "}\n";
 
 static const char *frag_shader_src =
@@ -131,7 +152,7 @@ bool gf_background_commit_state(struct gf_background *background) {
                    (tf_pos){starting_position, starting_position});
     int test_buf[128];
     for (int i = 0; i < (sizeof(test_buf) / sizeof(int)); i++) {
-      test_buf[i] = i;
+      test_buf[i] = GF_TERRAIN_LOW_RES_1;
     }
     assert(background->background_state.tiles_to_fill_screen < 128);
     gf_obj_update_buffer_data(background->instance_attr_buf_object, test_buf,
@@ -170,12 +191,15 @@ struct gf_background *gf_background_create() {
       gf_compile_shaders(vert_shader_src, frag_shader_src);
   gf_obj_set_shader(background->obj, shader);
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
+  gf_obj_set_vec4v(background->obj, GF_BACKGROUND_UNIFORM_TEX_MAP,
+                   sizeof(texture_positions) / sizeof(*texture_positions),
+                   (void *)texture_positions);
   // TODO: Create a means to increment binding index, or keep binding index in
   // macro instead of hardcoding.
   background->instance_attr_buf_binding_index = 1;
   background->instance_attr_buf_object        = gf_obj_create_attr(
       background->obj, background->instance_attr_buf_binding_index,
-      GF_BACKGROUND_ATTRIB_TEST_INDEX_LOCATION, GL_INT);
+      GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION, GL_INT);
 
   gf_background_commit_state(background);
 
