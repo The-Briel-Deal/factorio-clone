@@ -62,27 +62,70 @@ struct gf_terrain_texture_pos {
 #define NW(width)  ((float)width) / ((float)TEX_MAP_W)
 
 static const struct gf_terrain_texture_pos texture_positions[] = {
-    [GF_TERRAIN_LOW_RES_1] = {.top    = NH(TEX_MAP_H),
-                              .bottom = NH(TEX_MAP_H - 64),
-                              .left   = NW(0),
-                              .right  = NW(64)},
-    [GF_TERRAIN_LOW_RES_2] = {.top    = NH(TEX_MAP_H),
-                              .bottom = NH(TEX_MAP_H - 64),
-                              .left   = NW(64 * 1),
-                              .right  = NW(64 * 2)},
-    //	[GF_TERRAIN_LOW_RES_3]
-    //	[GF_TERRAIN_LOW_RES_4]
-    //	[GF_TERRAIN_LOW_RES_5]
-    //	[GF_TERRAIN_LOW_RES_6]
-    //	[GF_TERRAIN_LOW_RES_7]
-    //	[GF_TERRAIN_LOW_RES_8]
-    //	[GF_TERRAIN_LOW_RES_9]
-    //	[GF_TERRAIN_LOW_RES_10]
-    //	[GF_TERRAIN_LOW_RES_11]
-    //	[GF_TERRAIN_LOW_RES_12]
-    //	[GF_TERRAIN_LOW_RES_13]
-    //	[GF_TERRAIN_LOW_RES_14]
-    //	[GF_TERRAIN_LOW_RES_15]
+    [GF_TERRAIN_LOW_RES_1]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 0)),
+                               .right  = NW(64 + (64 * 0))},
+    [GF_TERRAIN_LOW_RES_2]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 1)),
+                               .right  = NW(64 + (64 * 1))},
+    [GF_TERRAIN_LOW_RES_3]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 2)),
+                               .right  = NW(64 + (64 * 2))},
+    [GF_TERRAIN_LOW_RES_4]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 3)),
+                               .right  = NW(64 + (64 * 3))},
+    [GF_TERRAIN_LOW_RES_5]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 4)),
+                               .right  = NW(64 + (64 * 4))},
+    [GF_TERRAIN_LOW_RES_6]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 5)),
+                               .right  = NW(64 + (64 * 5))},
+    [GF_TERRAIN_LOW_RES_7]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 6)),
+                               .right  = NW(64 + (64 * 6))},
+    [GF_TERRAIN_LOW_RES_8]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 7)),
+                               .right  = NW(64 + (64 * 7))},
+    [GF_TERRAIN_LOW_RES_9]  = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 8)),
+                               .right  = NW(64 + (64 * 8))},
+    [GF_TERRAIN_LOW_RES_10] = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 9)),
+                               .right  = NW(64 + (64 * 9))},
+    [GF_TERRAIN_LOW_RES_11] = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 10)),
+                               .right  = NW(64 + (64 * 10))},
+    [GF_TERRAIN_LOW_RES_12] = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 11)),
+                               .right  = NW(64 + (64 * 11))},
+    [GF_TERRAIN_LOW_RES_13] = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 12)),
+                               .right  = NW(64 + (64 * 12))},
+    [GF_TERRAIN_LOW_RES_14] = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 13)),
+                               .right  = NW(64 + (64 * 13))},
+    [GF_TERRAIN_LOW_RES_15] = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 14)),
+                               .right  = NW(64 + (64 * 14))},
+    [GF_TERRAIN_LOW_RES_16] = {.top    = NH(TEX_MAP_H),
+                               .bottom = NH(TEX_MAP_H - 64),
+                               .left   = NW(0 + (64 * 15)),
+                               .right  = NW(64 + (64 * 15))},
 };
 
 // TODO: Look into using constant expressions in C
@@ -178,7 +221,7 @@ static void gf_background_set_tile_size(struct gf_background *background,
 }
 static void gf_background_init_tiles(struct gf_background *background) {
   for (int i = 0; i < sizeof(background->background_state.tile_state); i++) {
-    background->background_state.tile_state[i] = i % 2;
+    background->background_state.tile_state[i] = i % 16;
   }
   background->background_state.dirty = true;
 }
@@ -194,7 +237,7 @@ struct gf_background *gf_background_create() {
   struct gf_background *background =
       &gf_background_list.items[gf_background_list.count++];
   gf_background_set_tile_size(background, GF_BACKGROUND_DEFAULT_TILE_SIZE);
-	gf_background_init_tiles(background);
+  gf_background_init_tiles(background);
 
   background->obj = gf_obj_create_box();
   struct gf_shader *shader =
