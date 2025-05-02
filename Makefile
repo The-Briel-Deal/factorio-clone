@@ -17,6 +17,9 @@ endif
 ifeq (${GF_DEBUG_PLAYER_INPUT}, 1)
 	CFLAGS += -DGF_DEBUG_PLAYER_INPUT
 endif
+ifeq (${GF_DEBUG_DRAW}, 1)
+	CFLAGS += -DGF_DEBUG_DRAW
+endif
 
 TEST_CFLAGS := $(CFLAGS) -Itest/include
 

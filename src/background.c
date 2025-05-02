@@ -180,11 +180,15 @@ static const char *frag_shader_src =
     "in vec4 testColor;\n"
     "out vec4 FragColor;\n"
     "\n"
+    "uniform bool debug = false;\n"
     "uniform sampler2D backgroundTex;\n"
     "\n"
     "void main()\n"
     "{\n"
     "    FragColor = texture(backgroundTex, texCoord);\n"
+    "    if (debug) {\n"
+    "        FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+    "    }\n"
     "}\n";
 
 bool gf_background_commit_state(struct gf_background *background) {
@@ -281,4 +285,12 @@ void gf_background_draw(struct gf_background *background) {
   gf_background_commit_state(background);
   gf_obj_draw_instanced(background->obj,
                         background->background_state.tiles_count);
+#ifdef GF_DEBUG_DRAW
+	gf_obj_set_int_by_name(background->obj, "debug", true);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  gf_obj_draw_instanced(background->obj,
+                        background->background_state.tiles_count);
+	gf_obj_set_int_by_name(background->obj, "debug", false);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
 }
