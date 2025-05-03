@@ -74,5 +74,7 @@ bool gf_obj_draw_instanced(struct gf_obj *obj, int instance_count);
 
 struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
                                      const char *frag_shader_src);
+struct gf_shader *gf_shader_create_from_paths(const char *vert_shader_path,
+                                              const char *frag_shader_path);
 
 #endif

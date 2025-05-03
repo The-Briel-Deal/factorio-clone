@@ -132,70 +132,6 @@ static const struct gf_terrain_texture_pos texture_positions[] = {
                                .right  = NW(64 + (64 * 15))},
 };
 
-// TODO: Look into using constant expressions in C
-#define TEXTURE_POSITIONS_LEN 16
-
-static const char *vert_shader_src =
-    "#version 450 core\n"
-    "\n"
-    "layout (location = " TO_STR(GF_ATTRIB_VERT_LOCATION) ") in vec2 aPos;\n"
-    "layout (location = " TO_STR(GF_ATTRIB_TEX_COORD_LOCATION) ") in vec2 aTexCoord;\n"
-    "layout (location = " TO_STR(GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION) ") in int aTexIndex;\n"
-    "layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;\n"
-    "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
-    "layout (std140) uniform TileState {\n"
-    "    int tileSize;\n"
-    "    int tilesPerRow;\n"
-    "};\n"
-    "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TEX_MAP) ") uniform vec4 textureMap[" TO_STR(TEXTURE_POSITIONS_LEN) "];\n"
-    "\n"
-    "out vec2 texCoord;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "    vec4 texCoords = textureMap[aTexIndex];\n"
-    "    float texTop = texCoords.x;\n"
-    "    float texBottom = texCoords.y;\n"
-    "    float texLeft = texCoords.z;\n"
-    "    float texRight = texCoords.w;\n"
-    "    int tileWidth = gl_InstanceID % (tilesPerRow);\n"
-    "    int tileHeight = gl_InstanceID / (tilesPerRow);\n"
-    "    vec4 tileOffset = vec4(tileSize * tileWidth, tileSize * tileHeight, 0, 0);\n"
-         // We need to apply the offset after transformation occurs to prevent 
-         // scaling shooting the tile offscreen.
-    "    vec4 worldPosition = model * vec4(aPos, 0.0, 1.0);\n"
-    "    vec4 offsetWorldPosition = worldPosition + tileOffset;\n"
-    "    gl_Position = projection * offsetWorldPosition;\n"
-    "    texCoord = vec2(0.0, 0.0);\n"
-    "    if (aTexCoord.x == 0.0) {\n"
-    "        texCoord.x = texLeft;\n"
-    "    } else {\n"
-    "        texCoord.x = texRight;"
-    "    }\n"
-    "    if (aTexCoord.y == 0.0) {\n"
-    "        texCoord.y = texBottom;\n"
-    "    } else {\n"
-    "        texCoord.y = texTop;"
-    "    }\n"
-    "}\n";
-
-static const char *frag_shader_src =
-    "#version 450 core\n"
-    "in vec2 texCoord;\n"
-    "in vec4 testColor;\n"
-    "out vec4 FragColor;\n"
-    "\n"
-    "uniform bool debug = false;\n"
-    "uniform sampler2D backgroundTex;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "    FragColor = texture(backgroundTex, texCoord);\n"
-    "    if (debug) {\n"
-    "        FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-    "    }\n"
-    "}\n";
-
 bool gf_background_commit_state(struct gf_background *background) {
   bool set = false;
   if (background->tile_state_dirty) {
@@ -245,9 +181,9 @@ struct gf_background *gf_background_create() {
   gf_background_set_tile_size(background, GF_BACKGROUND_DEFAULT_TILE_SIZE);
   gf_background_init_tiles(background);
 
-  background->obj = gf_obj_create_box();
-  struct gf_shader *shader =
-      gf_compile_shaders(vert_shader_src, frag_shader_src);
+  background->obj          = gf_obj_create_box();
+  struct gf_shader *shader = gf_shader_create_from_paths(
+      "shader/background_vert.glsl", "shader/background_frag.glsl");
   gf_obj_set_shader(background->obj, shader);
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
   gf_obj_set_vec4v(background->obj, GF_BACKGROUND_UNIFORM_TEX_MAP,

@@ -2,8 +2,11 @@
 #include <GL/glcorearb.h>
 #include <GL/glext.h>
 #include <assert.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <wayland-util.h>
 
 #include "common.h"
@@ -103,8 +106,7 @@ void gf_shader_commit_state(struct gf_shader *shader) {
   }
 }
 
-struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
-                                     const char *frag_shader_src) {
+static struct gf_shader *gf_shader_alloc() {
   if (gf_shader_list.count + 1 >= gf_shader_list.capacity) {
     gf_log(DEBUG_LOG,
            "`gf_shader_list` has a count of '%i', which is greater than "
@@ -113,7 +115,12 @@ struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
     return NULL;
   }
 
-  struct gf_shader *shader = &gf_shader_list.items[gf_shader_list.count++];
+  return &gf_shader_list.items[gf_shader_list.count++];
+}
+
+struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
+                                     const char *frag_shader_src) {
+  struct gf_shader *shader = gf_shader_alloc();
 
   shader->vert = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(shader->vert, 1, &vert_shader_src, NULL);
@@ -136,6 +143,46 @@ struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
           },
   };
   return shader;
+}
+
+static int gf_shader_compile_from_path(GLenum type, const char *path) {
+  int fshader = open(path, O_RDONLY);
+  assert(fshader != -1);
+  struct stat stat;
+  int e = fstat(fshader, &stat);
+  assert(e != -1);
+  const char *shader_str =
+      mmap(NULL, stat.st_size, PROT_READ, MAP_PRIVATE, fshader, 0);
+  assert(shader_str != NULL);
+
+  GLuint gl_shader = glCreateShader(type);
+  // Needs to be cast to a int since I pass len by ptr.
+  int shader_len = stat.st_size;
+  glShaderSource(gl_shader, 1, &shader_str, &shader_len);
+  glCompileShader(gl_shader);
+  munmap((void *)shader_str, stat.st_size);
+  return gl_shader;
+}
+
+static struct gf_shader *gf_shader_program_create(GLuint vs, GLuint fs) {
+  struct gf_shader *shader = gf_shader_alloc();
+
+  shader->vert    = vs;
+  shader->frag    = fs;
+  shader->program = glCreateProgram();
+  glAttachShader(shader->program, shader->vert);
+  glAttachShader(shader->program, shader->frag);
+  glLinkProgram(shader->program);
+  shader->state = (struct shader_state){0};
+  return shader;
+}
+
+struct gf_shader *gf_shader_create_from_paths(const char *vert_shader_path,
+                                              const char *frag_shader_path) {
+  int vs = gf_shader_compile_from_path(GL_VERTEX_SHADER, vert_shader_path);
+  int fs = gf_shader_compile_from_path(GL_FRAGMENT_SHADER, frag_shader_path);
+
+  return gf_shader_program_create(vs, fs);
 }
 
 const struct box_verts square_verts = {
