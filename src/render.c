@@ -206,6 +206,22 @@ struct gf_obj *gf_obj_create_box() {
   return obj;
 }
 
+GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
+                         uint binding) {
+  GLuint ubo;
+  // Create buf.
+  glCreateBuffers(1, &ubo);
+  glNamedBufferData(ubo, size, NULL, GL_DYNAMIC_DRAW);
+
+  // Bind to block index.
+  GLuint block_index = glGetUniformBlockIndex(obj->shader->program, name);
+  glUniformBlockBinding(obj->shader->program, block_index, binding);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, binding, ubo);
+
+  return ubo;
+}
+
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
                           GLuint attr_location, GLenum type) {
   GLuint instanced_attr_buffer;
@@ -312,9 +328,9 @@ void gf_obj_commit_state(struct gf_obj *obj) {
 void gf_obj_set_int(struct gf_obj *obj, int location, int val) {
   glProgramUniform1i(obj->shader->program, location, val);
 }
-void gf_obj_set_int_by_name(struct gf_obj *obj, char* name, int val) {
-	int location = glGetUniformLocation(obj->shader->program, name);
-	glProgramUniform1i(obj->shader->program, location, val);
+void gf_obj_set_int_by_name(struct gf_obj *obj, char *name, int val) {
+  int location = glGetUniformLocation(obj->shader->program, name);
+  glProgramUniform1i(obj->shader->program, location, val);
 }
 void gf_obj_set_vec4v(struct gf_obj *obj, int location, int count, void *val) {
   glProgramUniform4fv(obj->shader->program, location, count, val);

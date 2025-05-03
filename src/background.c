@@ -12,6 +12,8 @@
 #define GF_BACKGROUND_UNIFORM_TILE_WIDTH        4
 #define GF_BACKGROUND_UNIFORM_TEX_MAP           5
 
+#define GF_BACKGROUND_UBO_TILE_STATE            1
+
 #define GF_BACKGROUND_DEFAULT_TILE_SIZE         128
 
 #define GF_TERRAIN_LOW_RES_1                    0
@@ -36,6 +38,7 @@ struct gf_background {
   struct gf_obj *obj;
   GLuint instance_attr_buf_binding_index;
   GLuint instance_attr_buf_object;
+  GLuint tile_state_buf;
   struct gf_background_state {
     bool dirty;
     int tile_size;
@@ -139,7 +142,9 @@ static const char *vert_shader_src =
     "layout (location = " TO_STR(GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION) ") in int aTexIndex;\n"
     "layout (location = " TO_STR(GF_UNIFORM_TRANSFORM_MAT_LOCATION) ") uniform mat4 model;\n"
     "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
-    "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_SIZE) ") uniform int tileSize;\n"
+    "layout (std140) uniform TileState {\n"
+    "    int tileSize;\n"
+    "};\n"
     "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_WIDTH) ") uniform int maxTileWidth;\n"
     "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TEX_MAP) ") uniform vec4 textureMap[" TO_STR(TEXTURE_POSITIONS_LEN) "];\n"
     "\n"
@@ -194,8 +199,6 @@ static const char *frag_shader_src =
 bool gf_background_commit_state(struct gf_background *background) {
   bool set = false;
   if (background->background_state.dirty) {
-    gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_SIZE,
-                   background->background_state.tile_size);
     gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_WIDTH,
                    background->background_state.tiles_per_row);
     gf_obj_set_scale(background->obj,
@@ -207,6 +210,9 @@ bool gf_background_commit_state(struct gf_background *background) {
     gf_obj_update_buffer_data(background->instance_attr_buf_object,
                               background->background_state.tile_state,
                               sizeof(background->background_state.tile_state));
+    gf_obj_update_buffer_data(background->tile_state_buf,
+                              &background->background_state.tile_size,
+                              sizeof(background->background_state.tile_size));
     gf_obj_set_binding_divisor(background->obj,
                                background->instance_attr_buf_binding_index, 1);
 
@@ -258,6 +264,10 @@ struct gf_background *gf_background_create() {
       background->obj, background->instance_attr_buf_binding_index,
       GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION, GL_BYTE);
 
+  background->tile_state_buf = gf_obj_create_ubo(
+      background->obj, sizeof(background->background_state.tile_size),
+      "TileState", GF_BACKGROUND_UBO_TILE_STATE);
+
   gf_background_commit_state(background);
 
   return background;
@@ -286,11 +296,11 @@ void gf_background_draw(struct gf_background *background) {
   gf_obj_draw_instanced(background->obj,
                         background->background_state.tiles_count);
 #ifdef GF_DEBUG_DRAW
-	gf_obj_set_int_by_name(background->obj, "debug", true);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  gf_obj_set_int_by_name(background->obj, "debug", true);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   gf_obj_draw_instanced(background->obj,
                         background->background_state.tiles_count);
-	gf_obj_set_int_by_name(background->obj, "debug", false);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  gf_obj_set_int_by_name(background->obj, "debug", false);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
 }

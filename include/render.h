@@ -47,6 +47,9 @@ bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
 
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
                           GLuint attr_location, GLenum type);
+GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
+                         uint binding);
+
 void gf_obj_update_buffer_data(GLuint buffer, const void *data, int size);
 void gf_obj_set_binding_divisor(const struct gf_obj *obj, GLuint binding_index,
                                 GLuint divisor);
@@ -62,7 +65,7 @@ void gf_obj_set_rotation(struct gf_obj *obj, radians rotation);
 void gf_obj_rotate_by(struct gf_obj *obj, radians rotation);
 
 void gf_obj_set_int(struct gf_obj *obj, int location, int val);
-void gf_obj_set_int_by_name(struct gf_obj *obj, char* name, int val);
+void gf_obj_set_int_by_name(struct gf_obj *obj, char *name, int val);
 void gf_obj_set_vec4v(struct gf_obj *obj, int location, int count, void *val);
 
 void gf_obj_commit_state(struct gf_obj *obj);
