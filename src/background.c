@@ -39,14 +39,16 @@
 struct gf_background {
   struct gf_obj *obj;
   GLuint tex_offset_attr_buf;
-  GLuint tile_state_buf;
   uint8_t tile_tex_indices[1024];
+
   bool background_state_dirty;
+  GLuint tile_state_buf;
   struct gf_background_state {
     int tile_size;
-    int tiles_count;
     int tiles_per_row;
   } background_state;
+
+  int tiles_count;
 };
 
 STATIC_LIST(gf_background_list, struct gf_background, 128)
@@ -280,9 +282,9 @@ static void gf_background_sync_tiles(struct gf_background *background) {
 
   int tiles_to_fill_screen = width * height;
   if (background->background_state.tiles_per_row != width ||
-      background->background_state.tiles_count != tiles_to_fill_screen) {
+      background->tiles_count != tiles_to_fill_screen) {
     background->background_state.tiles_per_row = width;
-    background->background_state.tiles_count   = tiles_to_fill_screen;
+    background->tiles_count   = tiles_to_fill_screen;
     background->background_state_dirty         = true;
   }
 }
@@ -291,12 +293,12 @@ void gf_background_draw(struct gf_background *background) {
   gf_background_sync_tiles(background);
   gf_background_commit_state(background);
   gf_obj_draw_instanced(background->obj,
-                        background->background_state.tiles_count);
+                        background->tiles_count);
 #ifdef GF_DEBUG_DRAW
   gf_obj_set_int_by_name(background->obj, "debug", true);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   gf_obj_draw_instanced(background->obj,
-                        background->background_state.tiles_count);
+                        background->tiles_count);
   gf_obj_set_int_by_name(background->obj, "debug", false);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
