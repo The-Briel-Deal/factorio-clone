@@ -40,12 +40,12 @@ struct gf_background {
   struct gf_obj *obj;
   GLuint tex_offset_attr_buf;
   GLuint tile_state_buf;
+  uint8_t tile_tex_indices[1024];
   struct gf_background_state {
     bool dirty;
     int tile_size;
     int tiles_count;
     int tiles_per_row;
-    uint8_t tile_state[1024];
   } background_state;
 };
 
@@ -208,8 +208,8 @@ bool gf_background_commit_state(struct gf_background *background) {
     gf_obj_set_pos(background->obj,
                    (tf_pos){starting_position, starting_position});
     gf_obj_update_buffer_data(background->tex_offset_attr_buf,
-                              background->background_state.tile_state,
-                              sizeof(background->background_state.tile_state));
+                              background->tile_tex_indices,
+                              sizeof(background->tile_tex_indices));
     gf_obj_update_buffer_data(background->tile_state_buf,
                               &background->background_state.tile_size,
                               sizeof(background->background_state.tile_size));
@@ -228,8 +228,8 @@ static void gf_background_set_tile_size(struct gf_background *background,
   background->background_state.dirty     = true;
 }
 static void gf_background_init_tiles(struct gf_background *background) {
-  for (int i = 0; i < sizeof(background->background_state.tile_state); i++) {
-    background->background_state.tile_state[i] = i % 16;
+  for (int i = 0; i < sizeof(background->tile_tex_indices); i++) {
+    background->tile_tex_indices[i] = i % 16;
   }
   background->background_state.dirty = true;
 }
