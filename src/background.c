@@ -6,8 +6,10 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <stdint.h>
-#define GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION 2
 
+#define GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX  1
+
+#define GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION 2
 #define GF_BACKGROUND_UNIFORM_TILE_SIZE         3
 #define GF_BACKGROUND_UNIFORM_TILE_WIDTH        4
 #define GF_BACKGROUND_UNIFORM_TEX_MAP           5
@@ -36,8 +38,7 @@
 // TODO: Rename `instance_attr_*` to something better.
 struct gf_background {
   struct gf_obj *obj;
-  GLuint instance_attr_buf_binding_index;
-  GLuint instance_attr_buf_object;
+  GLuint tex_offset_attr_buf;
   GLuint tile_state_buf;
   struct gf_background_state {
     bool dirty;
@@ -206,14 +207,12 @@ bool gf_background_commit_state(struct gf_background *background) {
     float starting_position = background->background_state.tile_size / 2.0f;
     gf_obj_set_pos(background->obj,
                    (tf_pos){starting_position, starting_position});
-    gf_obj_update_buffer_data(background->instance_attr_buf_object,
+    gf_obj_update_buffer_data(background->tex_offset_attr_buf,
                               background->background_state.tile_state,
                               sizeof(background->background_state.tile_state));
     gf_obj_update_buffer_data(background->tile_state_buf,
                               &background->background_state.tile_size,
                               sizeof(background->background_state.tile_size));
-    gf_obj_set_binding_divisor(background->obj,
-                               background->instance_attr_buf_binding_index, 1);
 
     background->background_state.dirty = false;
     set                                = true;
@@ -256,12 +255,11 @@ struct gf_background *gf_background_create() {
   gf_obj_set_vec4v(background->obj, GF_BACKGROUND_UNIFORM_TEX_MAP,
                    sizeof(texture_positions) / sizeof(*texture_positions),
                    (void *)texture_positions);
-  // TODO: Create a means to increment binding index, or keep binding index in
-  // macro instead of hardcoding.
-  background->instance_attr_buf_binding_index = 1;
-  background->instance_attr_buf_object        = gf_obj_create_attr(
-      background->obj, background->instance_attr_buf_binding_index,
+  background->tex_offset_attr_buf = gf_obj_create_attr(
+      background->obj, GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX,
       GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION, GL_BYTE);
+  gf_obj_set_binding_divisor(background->obj,
+                             GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX, 1);
 
   background->tile_state_buf = gf_obj_create_ubo(
       background->obj, sizeof(background->background_state.tile_size),
