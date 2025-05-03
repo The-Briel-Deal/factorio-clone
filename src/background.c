@@ -147,38 +147,38 @@ static const char *vert_shader_src =
     "layout (location = " TO_STR(GF_UNIFORM_PROJECTION_MAT_LOCATION) ") uniform mat4 projection;\n"
     "layout (std140) uniform TileState {\n"
     "    int tileSize;\n"
+    "    int tilesPerRow;\n"
     "};\n"
-    "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TILE_WIDTH) ") uniform int maxTileWidth;\n"
     "layout (location = " TO_STR(GF_BACKGROUND_UNIFORM_TEX_MAP) ") uniform vec4 textureMap[" TO_STR(TEXTURE_POSITIONS_LEN) "];\n"
     "\n"
     "out vec2 texCoord;\n"
     "\n"
     "void main()\n"
     "{\n"
-		"    vec4 texCoords = textureMap[aTexIndex];\n"
-		"    float texTop = texCoords.x;\n"
-		"    float texBottom = texCoords.y;\n"
-		"    float texLeft = texCoords.z;\n"
-		"    float texRight = texCoords.w;\n"
-    "    int tileWidth = gl_InstanceID % (maxTileWidth);\n"
-    "    int tileHeight = gl_InstanceID / (maxTileWidth);\n"
+    "    vec4 texCoords = textureMap[aTexIndex];\n"
+    "    float texTop = texCoords.x;\n"
+    "    float texBottom = texCoords.y;\n"
+    "    float texLeft = texCoords.z;\n"
+    "    float texRight = texCoords.w;\n"
+    "    int tileWidth = gl_InstanceID % (tilesPerRow);\n"
+    "    int tileHeight = gl_InstanceID / (tilesPerRow);\n"
     "    vec4 tileOffset = vec4(tileSize * tileWidth, tileSize * tileHeight, 0, 0);\n"
          // We need to apply the offset after transformation occurs to prevent 
          // scaling shooting the tile offscreen.
     "    vec4 worldPosition = model * vec4(aPos, 0.0, 1.0);\n"
     "    vec4 offsetWorldPosition = worldPosition + tileOffset;\n"
     "    gl_Position = projection * offsetWorldPosition;\n"
-		"    texCoord = vec2(0.0, 0.0);\n"
-		"    if (aTexCoord.x == 0.0) {\n"
-		"        texCoord.x = texLeft;\n"
-		"    } else {\n"
-		"        texCoord.x = texRight;"
-		"    }\n"
-		"    if (aTexCoord.y == 0.0) {\n"
-		"        texCoord.y = texBottom;\n"
-		"    } else {\n"
-		"        texCoord.y = texTop;"
-		"    }\n"
+    "    texCoord = vec2(0.0, 0.0);\n"
+    "    if (aTexCoord.x == 0.0) {\n"
+    "        texCoord.x = texLeft;\n"
+    "    } else {\n"
+    "        texCoord.x = texRight;"
+    "    }\n"
+    "    if (aTexCoord.y == 0.0) {\n"
+    "        texCoord.y = texBottom;\n"
+    "    } else {\n"
+    "        texCoord.y = texTop;"
+    "    }\n"
     "}\n";
 
 static const char *frag_shader_src =
@@ -201,8 +201,6 @@ static const char *frag_shader_src =
 bool gf_background_commit_state(struct gf_background *background) {
   bool set = false;
   if (background->tile_state_dirty) {
-    gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_WIDTH,
-                   background->tile_state.tiles_per_row);
     gf_obj_set_scale(background->obj,
                      (tf_scale){background->tile_state.tile_size,
                                 background->tile_state.tile_size});
@@ -213,11 +211,11 @@ bool gf_background_commit_state(struct gf_background *background) {
                               background->tile_tex_indices,
                               sizeof(background->tile_tex_indices));
     gf_obj_update_buffer_data(background->tile_state_buf,
-                              &background->tile_state.tile_size,
-                              sizeof(background->tile_state.tile_size));
+                              &background->tile_state,
+                              sizeof(background->tile_state));
 
     background->tile_state_dirty = false;
-    set                                = true;
+    set                          = true;
   }
   gf_obj_commit_state(background->obj);
 
@@ -263,9 +261,9 @@ struct gf_background *gf_background_create() {
   gf_obj_set_binding_divisor(background->obj,
                              GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX, 1);
 
-  background->tile_state_buf = gf_obj_create_ubo(
-      background->obj, sizeof(background->tile_state.tile_size),
-      "TileState", GF_BACKGROUND_UBO_TILE_STATE);
+  background->tile_state_buf =
+      gf_obj_create_ubo(background->obj, sizeof(background->tile_state),
+                        "TileState", GF_BACKGROUND_UBO_TILE_STATE);
 
   gf_background_commit_state(background);
 
@@ -282,9 +280,9 @@ static void gf_background_sync_tiles(struct gf_background *background) {
 
   int tiles_to_fill_screen = width * height;
   if (background->tile_state.tiles_per_row != width ||
-      background->tiles_count != tiles_to_fill_screen) {
+      background->tile_count != tiles_to_fill_screen) {
     background->tile_state.tiles_per_row = width;
-    background->tiles_count   = tiles_to_fill_screen;
+    background->tile_count               = tiles_to_fill_screen;
     background->tile_state_dirty         = true;
   }
 }
@@ -292,13 +290,11 @@ static void gf_background_sync_tiles(struct gf_background *background) {
 void gf_background_draw(struct gf_background *background) {
   gf_background_sync_tiles(background);
   gf_background_commit_state(background);
-  gf_obj_draw_instanced(background->obj,
-                        background->tiles_count);
+  gf_obj_draw_instanced(background->obj, background->tile_count);
 #ifdef GF_DEBUG_DRAW
   gf_obj_set_int_by_name(background->obj, "debug", true);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  gf_obj_draw_instanced(background->obj,
-                        background->tiles_count);
+  gf_obj_draw_instanced(background->obj, background->tile_count);
   gf_obj_set_int_by_name(background->obj, "debug", false);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
