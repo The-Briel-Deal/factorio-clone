@@ -176,7 +176,6 @@ static const char *vert_shader_src =
 		"    } else {\n"
 		"        texCoord.y = texTop;"
 		"    }\n"
-    // "    texCoord = vec2(aTexCoord.x * (256.0 / 4096.0), aTexCoord.y * (256.0 / 576.0));\n"
     "}\n";
 
 static const char *frag_shader_src =
