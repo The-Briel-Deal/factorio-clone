@@ -41,14 +41,14 @@ struct gf_background {
   GLuint tex_offset_attr_buf;
   uint8_t tile_tex_indices[1024];
 
-  bool background_state_dirty;
+  bool tile_state_dirty;
   GLuint tile_state_buf;
-  struct gf_background_state {
+  struct gf_tile_state {
     int tile_size;
     int tiles_per_row;
-  } background_state;
+  } tile_state;
 
-  int tiles_count;
+  int tile_count;
 };
 
 STATIC_LIST(gf_background_list, struct gf_background, 128)
@@ -200,23 +200,23 @@ static const char *frag_shader_src =
 
 bool gf_background_commit_state(struct gf_background *background) {
   bool set = false;
-  if (background->background_state_dirty) {
+  if (background->tile_state_dirty) {
     gf_obj_set_int(background->obj, GF_BACKGROUND_UNIFORM_TILE_WIDTH,
-                   background->background_state.tiles_per_row);
+                   background->tile_state.tiles_per_row);
     gf_obj_set_scale(background->obj,
-                     (tf_scale){background->background_state.tile_size,
-                                background->background_state.tile_size});
-    float starting_position = background->background_state.tile_size / 2.0f;
+                     (tf_scale){background->tile_state.tile_size,
+                                background->tile_state.tile_size});
+    float starting_position = background->tile_state.tile_size / 2.0f;
     gf_obj_set_pos(background->obj,
                    (tf_pos){starting_position, starting_position});
     gf_obj_update_buffer_data(background->tex_offset_attr_buf,
                               background->tile_tex_indices,
                               sizeof(background->tile_tex_indices));
     gf_obj_update_buffer_data(background->tile_state_buf,
-                              &background->background_state.tile_size,
-                              sizeof(background->background_state.tile_size));
+                              &background->tile_state.tile_size,
+                              sizeof(background->tile_state.tile_size));
 
-    background->background_state_dirty = false;
+    background->tile_state_dirty = false;
     set                                = true;
   }
   gf_obj_commit_state(background->obj);
@@ -226,14 +226,14 @@ bool gf_background_commit_state(struct gf_background *background) {
 
 static void gf_background_set_tile_size(struct gf_background *background,
                                         int tile_size) {
-  background->background_state.tile_size = tile_size;
-  background->background_state_dirty     = true;
+  background->tile_state.tile_size = tile_size;
+  background->tile_state_dirty     = true;
 }
 static void gf_background_init_tiles(struct gf_background *background) {
   for (int i = 0; i < sizeof(background->tile_tex_indices); i++) {
     background->tile_tex_indices[i] = i % 16;
   }
-  background->background_state_dirty = true;
+  background->tile_state_dirty = true;
 }
 
 struct gf_background *gf_background_create() {
@@ -264,7 +264,7 @@ struct gf_background *gf_background_create() {
                              GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX, 1);
 
   background->tile_state_buf = gf_obj_create_ubo(
-      background->obj, sizeof(background->background_state.tile_size),
+      background->obj, sizeof(background->tile_state.tile_size),
       "TileState", GF_BACKGROUND_UBO_TILE_STATE);
 
   gf_background_commit_state(background);
@@ -273,7 +273,7 @@ struct gf_background *gf_background_create() {
 }
 
 static void gf_background_sync_tiles(struct gf_background *background) {
-  const int tile_size = background->background_state.tile_size;
+  const int tile_size = background->tile_state.tile_size;
   assert(tile_size != 0);
   const struct viewport_dimensions *viewport = gf_render_get_window_size();
   // Add 1 to height and width to offset int division rounding down.
@@ -281,11 +281,11 @@ static void gf_background_sync_tiles(struct gf_background *background) {
   int height = (viewport->height / tile_size) + 1;
 
   int tiles_to_fill_screen = width * height;
-  if (background->background_state.tiles_per_row != width ||
+  if (background->tile_state.tiles_per_row != width ||
       background->tiles_count != tiles_to_fill_screen) {
-    background->background_state.tiles_per_row = width;
+    background->tile_state.tiles_per_row = width;
     background->tiles_count   = tiles_to_fill_screen;
-    background->background_state_dirty         = true;
+    background->tile_state_dirty         = true;
   }
 }
 
