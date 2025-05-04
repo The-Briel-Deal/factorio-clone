@@ -105,7 +105,15 @@ bool init_egl(struct gf_egl_state *gf_egl_state, struct wl_display *wl_display,
                  gf_egl_state->surface, gf_egl_state->context);
 
   // During init, enable debug output
-  glEnable(GL_DEBUG_OUTPUT);
-  glDebugMessageCallback(MessageCallback, 0);
+  int flags;
+  glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+  if (flags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+    gf_log(DEBUG_LOG, "You are in a debug context!");
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(MessageCallback, 0);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL,
+                          GL_TRUE);
+  }
   return true;
 }

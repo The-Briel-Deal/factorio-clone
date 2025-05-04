@@ -1,7 +1,7 @@
 #version 450 core
 
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aTexCoord;
+in vec2 aPos;
+in vec2 aTexCoord;
 in int aTexIndex;
 layout(location = 1) uniform mat4 model;
 layout(location = 0) uniform mat4 projection;

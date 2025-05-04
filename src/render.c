@@ -118,6 +118,18 @@ static struct gf_shader *gf_shader_alloc() {
   return &gf_shader_list.items[gf_shader_list.count++];
 }
 
+static void gf_shader_compile_check_err(GLuint shader) {
+  GLint compiled;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+  if (compiled == GL_FALSE) {
+    char buf[1024];
+    int buf_size = sizeof(buf);
+    int len;
+    glGetShaderInfoLog(shader, buf_size, &len, buf);
+    gf_log(ERROR_LOG, "SHADER COMPILE FAIL - %.*s", len, buf);
+  }
+}
+
 static int gf_shader_compile_from_path(GLenum type, const char *path) {
   int fshader = open(path, O_RDONLY);
   assert(fshader != -1);
@@ -133,20 +145,39 @@ static int gf_shader_compile_from_path(GLenum type, const char *path) {
   int shader_len = stat.st_size;
   glShaderSource(gl_shader, 1, &shader_str, &shader_len);
   glCompileShader(gl_shader);
+#ifndef NDEBUG
+  gf_shader_compile_check_err(gl_shader);
+#endif
   munmap((void *)shader_str, stat.st_size);
   return gl_shader;
 }
+
+static void gf_shader_program_check_err(GLuint program) {
+  GLint linked;
+  glGetProgramiv(program, GL_LINK_STATUS, &linked);
+  if (linked == GL_FALSE) {
+    char buf[1024];
+    int buf_size = sizeof(buf);
+    int len;
+    glGetProgramInfoLog(program, buf_size, &len, buf);
+    gf_log(ERROR_LOG, "SHADER PROGRAM LINK FAIL - %.*s", len, buf);
+  }
+}
+
 
 static struct gf_shader *gf_shader_program_create(GLuint vs, GLuint fs) {
   struct gf_shader *shader = gf_shader_alloc();
 
   shader->vert    = vs;
   shader->frag    = fs;
+  shader->state   = (struct shader_state){0};
   shader->program = glCreateProgram();
   glAttachShader(shader->program, shader->vert);
   glAttachShader(shader->program, shader->frag);
   glLinkProgram(shader->program);
-  shader->state = (struct shader_state){0};
+#ifndef NDEBUG
+  gf_shader_program_check_err(shader->program);
+#endif
   return shader;
 }
 
@@ -161,13 +192,17 @@ struct gf_shader *gf_shader_create_from_paths(const char *vert_shader_path,
 // TODO: Cache uniform locations.
 static int gf_shader_get_uni_location(struct gf_shader *shader,
                                       const char *name) {
-  return glGetUniformLocation(shader->program, name);
+  GLint loc = glGetUniformLocation(shader->program, name);
+  assert(loc != -1);
+  return loc;
 }
 
 // TODO: Cache attr locations.
 static int gf_shader_get_attr_location(struct gf_shader *shader,
                                        const char *name) {
-  return glGetAttribLocation(shader->program, name);
+  GLint loc = glGetAttribLocation(shader->program, name);
+  assert(loc != -1);
+  return loc;
 }
 
 const struct box_verts square_verts = {
@@ -191,18 +226,21 @@ const struct box_verts square_verts = {
 
 void gf_obj_setup_attrs(struct gf_obj *obj) {
   assert(obj->shader != NULL);
-  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_VERT_LOCATION);
-  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_VERT_LOCATION,
+  GLint pos_location = gf_shader_get_attr_location(obj->shader, "aPos");
+  glEnableVertexArrayAttrib(obj->vao, pos_location);
+  glVertexArrayAttribFormat(obj->vao, pos_location,
                             sizeof(vertex) / sizeof(GLfloat), GL_FLOAT, false,
                             offsetof(struct tex_vert, pos));
-  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_VERT_LOCATION, 0);
+  glVertexArrayAttribBinding(obj->vao, pos_location, 0);
 
 
-  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION);
-  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION,
+  GLint tex_coord_location =
+      gf_shader_get_attr_location(obj->shader, "aTexCoord");
+  glEnableVertexArrayAttrib(obj->vao, tex_coord_location);
+  glVertexArrayAttribFormat(obj->vao, tex_coord_location,
                             sizeof(vec2) / sizeof(GLfloat), GL_FLOAT, false,
                             offsetof(struct tex_vert, tex_coord));
-  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION, 0);
+  glVertexArrayAttribBinding(obj->vao, tex_coord_location, 0);
 }
 
 struct gf_obj *gf_obj_create_box() {
