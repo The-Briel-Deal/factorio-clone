@@ -74,7 +74,7 @@ struct gf_player *gf_player_create() {
   player->input_state = 0b0000;
   player->movement    = (vec2s){.x = 0.0, .y = 0.0};
 
-  player->obj = gf_obj_create_box();
+  player->obj = gf_obj_create_quad();
   gf_obj_set_scale(player->obj, (vec2s){100, 100});
   struct gf_shader *shader =
       gf_shader_create_from_paths("shader/player_vert.glsl", "shader/player_frag.glsl");

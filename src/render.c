@@ -243,7 +243,7 @@ void gf_obj_setup_attrs(struct gf_obj *obj) {
   glVertexArrayAttribBinding(obj->vao, tex_coord_location, 0);
 }
 
-struct gf_obj *gf_obj_create_box() {
+struct gf_obj *gf_obj_create_quad() {
   if (gf_obj_list.count + 1 >= gf_obj_list.capacity) {
     gf_log(DEBUG_LOG,
            "`gf_obj_list` has a count of '%i', which is greater than "

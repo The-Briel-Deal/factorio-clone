@@ -178,7 +178,7 @@ struct gf_background *gf_background_create() {
   gf_background_set_tile_size(background, GF_BACKGROUND_DEFAULT_TILE_SIZE);
   gf_background_init_tiles(background);
 
-  background->obj          = gf_obj_create_box();
+  background->obj          = gf_obj_create_quad();
   struct gf_shader *shader = gf_shader_create_from_paths(
       "shader/background_vert.glsl", "shader/background_frag.glsl");
   gf_obj_set_shader(background->obj, shader);

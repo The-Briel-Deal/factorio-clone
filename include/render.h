@@ -39,7 +39,7 @@ bool gf_render_update_window_size(int32_t height, int32_t width);
 const struct viewport_dimensions *gf_render_get_window_size();
 void gf_shader_commit_state(struct gf_shader *shader);
 
-struct gf_obj *gf_obj_create_box();
+struct gf_obj *gf_obj_create_quad();
 bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader);
 bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
                         enum gf_texture_type type);
