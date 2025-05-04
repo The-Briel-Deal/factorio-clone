@@ -108,7 +108,7 @@ void gf_player_input_listener(xkb_keysym_t key, bool pressed, void *data) {
 }
 
 void gf_player_update_state(struct gf_player *player, double delta_time) {
-  gf_log(DEBUG_LOG, "Delta Time: '%f'", delta_time);
+  gf_log(INFO_LOG, "Delta Time: '%f'", delta_time);
   vec2s movement_vector = {.x = 0.0, .y = 0.0};
   if (player->input_state & GF_PLAYER_INPUT_UP)
     movement_vector.y += 1.0;
