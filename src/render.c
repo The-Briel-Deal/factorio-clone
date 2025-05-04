@@ -118,33 +118,6 @@ static struct gf_shader *gf_shader_alloc() {
   return &gf_shader_list.items[gf_shader_list.count++];
 }
 
-struct gf_shader *gf_compile_shaders(const char *vert_shader_src,
-                                     const char *frag_shader_src) {
-  struct gf_shader *shader = gf_shader_alloc();
-
-  shader->vert = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(shader->vert, 1, &vert_shader_src, NULL);
-  glCompileShader(shader->vert);
-
-  shader->frag = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(shader->frag, 1, &frag_shader_src, NULL);
-  glCompileShader(shader->frag);
-
-  shader->program = glCreateProgram();
-  glAttachShader(shader->program, shader->vert);
-  glAttachShader(shader->program, shader->frag);
-  glLinkProgram(shader->program);
-
-  shader->state = (struct shader_state){
-      .last_committed_viewport =
-          {
-              .height = 0,
-              .width  = 0,
-          },
-  };
-  return shader;
-}
-
 static int gf_shader_compile_from_path(GLenum type, const char *path) {
   int fshader = open(path, O_RDONLY);
   assert(fshader != -1);
