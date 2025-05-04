@@ -48,6 +48,7 @@ struct gf_obj {
   GLuint vbo;
   GLuint vao;
   GLuint ebo;
+  GLuint ubo_mat;
   struct obj_state {
     struct transform {
       tf_scale scale;
@@ -78,31 +79,31 @@ const struct viewport_dimensions *gf_render_get_window_size() {
   return &render_state.viewport;
 }
 
-void gf_shader_sync_projection_matrix(struct gf_shader *shader) {
-  int h = shader->state.last_committed_viewport.height;
-  int w = shader->state.last_committed_viewport.width;
+void gf_obj_sync_projection_matrix(struct gf_obj *obj) {
+  int h = obj->shader->state.last_committed_viewport.height;
+  int w = obj->shader->state.last_committed_viewport.width;
 
   gf_log(INFO_LOG,
          "Syncing projection matrix (h: %i, w: %i) to shader program '%i'.", h,
-         w, shader->program);
+         w, obj->shader->program);
 
   assert(h > 0);
   assert(w > 0);
   mat4 projection;
   gf_ortho(0.0f, w, 0, h, -1.0, 1.0, projection);
 
-  glProgramUniformMatrix4fv(shader->program, GF_UNIFORM_PROJECTION_MAT_LOCATION,
-                            1, false, (GLfloat *)projection);
+  glNamedBufferSubData(obj->ubo_mat, 0, sizeof(projection), projection);
 }
 
-void gf_shader_commit_state(struct gf_shader *shader) {
+void gf_obj_commit_projection(struct gf_obj *obj) {
   // Only sync if shader viewport out of sync with render state.
-  struct viewport_dimensions *last_vp = &shader->state.last_committed_viewport,
+  struct viewport_dimensions *last_vp =
+                                 &obj->shader->state.last_committed_viewport,
                              *curr_vp = &render_state.viewport;
   if (last_vp->height != curr_vp->height || last_vp->width != curr_vp->width) {
     last_vp->height = curr_vp->height;
     last_vp->width  = curr_vp->width;
-    gf_shader_sync_projection_matrix(shader);
+    gf_obj_sync_projection_matrix(obj);
   }
 }
 
@@ -243,7 +244,24 @@ void gf_obj_setup_attrs(struct gf_obj *obj) {
   glVertexArrayAttribBinding(obj->vao, tex_coord_location, 0);
 }
 
-struct gf_obj *gf_obj_create_quad() {
+
+GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
+                         uint binding) {
+  GLuint ubo;
+  // Create buf.
+  glCreateBuffers(1, &ubo);
+  glNamedBufferData(ubo, size, NULL, GL_DYNAMIC_DRAW);
+
+  // Bind to block index.
+  GLuint block_index = glGetUniformBlockIndex(obj->shader->program, name);
+  glUniformBlockBinding(obj->shader->program, block_index, binding);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, binding, ubo);
+
+  return ubo;
+}
+
+struct gf_obj *gf_obj_create_quad(struct gf_shader *shader) {
   if (gf_obj_list.count + 1 >= gf_obj_list.capacity) {
     gf_log(DEBUG_LOG,
            "`gf_obj_list` has a count of '%i', which is greater than "
@@ -253,6 +271,7 @@ struct gf_obj *gf_obj_create_quad() {
   }
 
   struct gf_obj *obj = &gf_obj_list.items[gf_obj_list.count++];
+  obj->shader        = shader;
 
   glCreateBuffers(1, &obj->vbo);
   glNamedBufferStorage(obj->vbo, sizeof(struct box_verts), &square_verts,
@@ -278,24 +297,9 @@ struct gf_obj *gf_obj_create_quad() {
               .dirty = true,
           },
   };
-  obj->shader = NULL;
+  gf_obj_setup_attrs(obj);
+  obj->ubo_mat = gf_obj_create_ubo(obj, sizeof(mat4) * 2, "Matrices", 2);
   return obj;
-}
-
-GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
-                         uint binding) {
-  GLuint ubo;
-  // Create buf.
-  glCreateBuffers(1, &ubo);
-  glNamedBufferData(ubo, size, NULL, GL_DYNAMIC_DRAW);
-
-  // Bind to block index.
-  GLuint block_index = glGetUniformBlockIndex(obj->shader->program, name);
-  glUniformBlockBinding(obj->shader->program, block_index, binding);
-
-  glBindBufferBase(GL_UNIFORM_BUFFER, binding, ubo);
-
-  return ubo;
 }
 
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
@@ -333,7 +337,6 @@ bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
     return false;
   }
   obj->shader = shader;
-  gf_obj_setup_attrs(obj);
   return true;
 }
 
@@ -359,9 +362,7 @@ static void gf_obj_sync_transform(struct gf_obj *obj) {
   gf_mat4_rotate2d(model, obj->state.transform.rotation);
   gf_mat4_scale2d(model, obj->state.transform.scale);
 
-  glProgramUniformMatrix4fv(obj->shader->program,
-                            GF_UNIFORM_TRANSFORM_MAT_LOCATION, 1, false,
-                            (GLfloat *)model);
+  glNamedBufferSubData(obj->ubo_mat, sizeof(model), sizeof(model), model);
 }
 
 tf_scale gf_obj_get_scale(struct gf_obj *obj) {
@@ -401,7 +402,7 @@ void gf_obj_commit_state(struct gf_obj *obj) {
     obj->state.transform.dirty = false;
     gf_obj_sync_transform(obj);
   }
-  gf_shader_commit_state(obj->shader);
+  gf_obj_commit_projection(obj);
 }
 
 void gf_obj_set_int(struct gf_obj *obj, char *name, int val) {
@@ -418,6 +419,7 @@ bool gf_obj_draw(struct gf_obj *obj) {
   glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
   glBindTextureUnit(0, obj->texture->gl_name);
   glBindVertexArray(obj->vao);
+  glBindBufferBase(GL_UNIFORM_BUFFER, 2, obj->ubo_mat);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   return true;
 }
@@ -427,6 +429,7 @@ bool gf_obj_draw_instanced(struct gf_obj *obj, int instance_count) {
   glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
   glBindTextureUnit(0, obj->texture->gl_name);
   glBindVertexArray(obj->vao);
+  glBindBufferBase(GL_UNIFORM_BUFFER, 2, obj->ubo_mat);
   glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, instance_count);
   return true;
 }

@@ -74,11 +74,10 @@ struct gf_player *gf_player_create() {
   player->input_state = 0b0000;
   player->movement    = (vec2s){.x = 0.0, .y = 0.0};
 
-  player->obj = gf_obj_create_quad();
+  struct gf_shader *shader = gf_shader_create_from_paths(
+      "shader/player_vert.glsl", "shader/player_frag.glsl");
+  player->obj = gf_obj_create_quad(shader);
   gf_obj_set_scale(player->obj, (vec2s){100, 100});
-  struct gf_shader *shader =
-      gf_shader_create_from_paths("shader/player_vert.glsl", "shader/player_frag.glsl");
-  gf_obj_set_shader(player->obj, shader);
   gf_obj_set_texture(player->obj, "playerTex", GF_TEXTURE_FACTORIO_ICON);
   gf_obj_commit_state(player->obj);
 

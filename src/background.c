@@ -7,28 +7,28 @@
 #include <GL/glext.h>
 #include <stdint.h>
 
-#define GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX  1
+#define GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX 1
 
-#define GF_BACKGROUND_UBO_TILE_STATE            1
+#define GF_BACKGROUND_UBO_TILE_STATE           1
 
-#define GF_BACKGROUND_DEFAULT_TILE_SIZE         128
+#define GF_BACKGROUND_DEFAULT_TILE_SIZE        128
 
-#define GF_TERRAIN_LOW_RES_1                    0
-#define GF_TERRAIN_LOW_RES_2                    1
-#define GF_TERRAIN_LOW_RES_3                    2
-#define GF_TERRAIN_LOW_RES_4                    3
-#define GF_TERRAIN_LOW_RES_5                    4
-#define GF_TERRAIN_LOW_RES_6                    5
-#define GF_TERRAIN_LOW_RES_7                    6
-#define GF_TERRAIN_LOW_RES_8                    7
-#define GF_TERRAIN_LOW_RES_9                    8
-#define GF_TERRAIN_LOW_RES_10                   9
-#define GF_TERRAIN_LOW_RES_11                   10
-#define GF_TERRAIN_LOW_RES_12                   11
-#define GF_TERRAIN_LOW_RES_13                   12
-#define GF_TERRAIN_LOW_RES_14                   13
-#define GF_TERRAIN_LOW_RES_15                   14
-#define GF_TERRAIN_LOW_RES_16                   15
+#define GF_TERRAIN_LOW_RES_1                   0
+#define GF_TERRAIN_LOW_RES_2                   1
+#define GF_TERRAIN_LOW_RES_3                   2
+#define GF_TERRAIN_LOW_RES_4                   3
+#define GF_TERRAIN_LOW_RES_5                   4
+#define GF_TERRAIN_LOW_RES_6                   5
+#define GF_TERRAIN_LOW_RES_7                   6
+#define GF_TERRAIN_LOW_RES_8                   7
+#define GF_TERRAIN_LOW_RES_9                   8
+#define GF_TERRAIN_LOW_RES_10                  9
+#define GF_TERRAIN_LOW_RES_11                  10
+#define GF_TERRAIN_LOW_RES_12                  11
+#define GF_TERRAIN_LOW_RES_13                  12
+#define GF_TERRAIN_LOW_RES_14                  13
+#define GF_TERRAIN_LOW_RES_15                  14
+#define GF_TERRAIN_LOW_RES_16                  15
 
 // TODO: Rename `instance_attr_*` to something better.
 struct gf_background {
@@ -178,17 +178,17 @@ struct gf_background *gf_background_create() {
   gf_background_set_tile_size(background, GF_BACKGROUND_DEFAULT_TILE_SIZE);
   gf_background_init_tiles(background);
 
-  background->obj          = gf_obj_create_quad();
   struct gf_shader *shader = gf_shader_create_from_paths(
       "shader/background_vert.glsl", "shader/background_frag.glsl");
+  background->obj = gf_obj_create_quad(shader);
   gf_obj_set_shader(background->obj, shader);
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
   gf_obj_set_vec4v(background->obj, "textureMap",
                    sizeof(texture_positions) / sizeof(*texture_positions),
                    (void *)texture_positions);
   background->tex_offset_attr_buf = gf_obj_create_attr(
-      background->obj, GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX,
-      "aTexIndex", GL_BYTE);
+      background->obj, GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX, "aTexIndex",
+      GL_BYTE);
   gf_obj_set_binding_divisor(background->obj,
                              GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX, 1);
 
