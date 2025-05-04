@@ -158,6 +158,18 @@ struct gf_shader *gf_shader_create_from_paths(const char *vert_shader_path,
   return gf_shader_program_create(vs, fs);
 }
 
+// TODO: Cache uniform locations.
+static int gf_shader_get_uni_location(struct gf_shader *shader,
+                                      const char *name) {
+  return glGetUniformLocation(shader->program, name);
+}
+
+// TODO: Cache attr locations.
+static int gf_shader_get_attr_location(struct gf_shader *shader,
+                                       const char *name) {
+  return glGetAttribLocation(shader->program, name);
+}
+
 const struct box_verts square_verts = {
     {
         {.x = 0.5, .y = 0.5},
@@ -243,7 +255,9 @@ GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
 }
 
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
-                          GLuint attr_location, GLenum type) {
+                          const char* name, GLenum type) {
+  GLuint location = gf_shader_get_attr_location(obj->shader, name);
+
   GLuint instanced_attr_buffer;
   glCreateBuffers(1, &instanced_attr_buffer);
   // TODO: Use an argument for initial size.
@@ -251,10 +265,10 @@ GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
                     GL_DYNAMIC_DRAW);
   // TODO: Use an argument for stride.
   glVertexArrayVertexBuffer(obj->vao, 1, instanced_attr_buffer, 0, 1);
-  glEnableVertexArrayAttrib(obj->vao, attr_location);
+  glEnableVertexArrayAttrib(obj->vao, location);
   // TODO: Use an argument for the size of a single attrib.
-  glVertexArrayAttribIFormat(obj->vao, attr_location, 1, type, 0);
-  glVertexArrayAttribBinding(obj->vao, attr_location, 1);
+  glVertexArrayAttribIFormat(obj->vao, location, 1, type, 0);
+  glVertexArrayAttribBinding(obj->vao, location, 1);
 
   return instanced_attr_buffer;
 }
@@ -345,10 +359,6 @@ void gf_obj_commit_state(struct gf_obj *obj) {
   gf_shader_commit_state(obj->shader);
 }
 
-// TODO: Cache uniform locations.
-static int gf_obj_get_uniform_location(struct gf_obj *obj, const char *name) {
-  return glGetUniformLocation(obj->shader->program, name);
-}
 
 void gf_obj_set_int(struct gf_obj *obj, int location, int val) {
   glProgramUniform1i(obj->shader->program, location, val);
@@ -358,7 +368,7 @@ void gf_obj_set_int_by_name(struct gf_obj *obj, char *name, int val) {
   glProgramUniform1i(obj->shader->program, location, val);
 }
 void gf_obj_set_vec4v(struct gf_obj *obj, char *name, int count, void *val) {
-  int location = gf_obj_get_uniform_location(obj, name);
+  int location = gf_shader_get_uni_location(obj->shader, name);
   glProgramUniform4fv(obj->shader->program, location, count, val);
 }
 

@@ -9,8 +9,6 @@
 
 #define GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX  1
 
-#define GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION 2
-
 #define GF_BACKGROUND_UBO_TILE_STATE            1
 
 #define GF_BACKGROUND_DEFAULT_TILE_SIZE         128
@@ -190,7 +188,7 @@ struct gf_background *gf_background_create() {
                    (void *)texture_positions);
   background->tex_offset_attr_buf = gf_obj_create_attr(
       background->obj, GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX,
-      GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION, GL_BYTE);
+      "aTexIndex", GL_BYTE);
   gf_obj_set_binding_divisor(background->obj,
                              GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX, 1);
 

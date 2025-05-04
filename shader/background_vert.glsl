@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec2 aPos;
 layout(location = 1) in vec2 aTexCoord;
-layout(location = 2) in int aTexIndex;
+in int aTexIndex;
 layout(location = 1) uniform mat4 model;
 layout(location = 0) uniform mat4 projection;
 layout(std140) uniform TileState {

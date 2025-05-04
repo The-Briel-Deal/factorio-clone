@@ -46,7 +46,7 @@ bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
 
 
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
-                          GLuint attr_location, GLenum type);
+                          const char *name, GLenum type);
 GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
                          uint binding);
 
