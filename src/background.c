@@ -223,10 +223,10 @@ void gf_background_draw(struct gf_background *background) {
   gf_background_commit_state(background);
   gf_obj_draw_instanced(background->obj, background->tile_count);
 #ifdef GF_DEBUG_DRAW
-  gf_obj_set_int_by_name(background->obj, "debug", true);
+  gf_obj_set_int(background->obj, "debug", true);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   gf_obj_draw_instanced(background->obj, background->tile_count);
-  gf_obj_set_int_by_name(background->obj, "debug", false);
+  gf_obj_set_int(background->obj, "debug", false);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
 }

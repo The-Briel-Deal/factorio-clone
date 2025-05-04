@@ -359,11 +359,7 @@ void gf_obj_commit_state(struct gf_obj *obj) {
   gf_shader_commit_state(obj->shader);
 }
 
-
-void gf_obj_set_int(struct gf_obj *obj, int location, int val) {
-  glProgramUniform1i(obj->shader->program, location, val);
-}
-void gf_obj_set_int_by_name(struct gf_obj *obj, char *name, int val) {
+void gf_obj_set_int(struct gf_obj *obj, char *name, int val) {
   int location = glGetUniformLocation(obj->shader->program, name);
   glProgramUniform1i(obj->shader->program, location, val);
 }
