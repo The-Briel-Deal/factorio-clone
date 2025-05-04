@@ -189,6 +189,22 @@ const struct box_verts square_verts = {
     },
 };
 
+void gf_obj_setup_attrs(struct gf_obj *obj) {
+  assert(obj->shader != NULL);
+  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_VERT_LOCATION);
+  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_VERT_LOCATION,
+                            sizeof(vertex) / sizeof(GLfloat), GL_FLOAT, false,
+                            offsetof(struct tex_vert, pos));
+  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_VERT_LOCATION, 0);
+
+
+  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION);
+  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION,
+                            sizeof(vec2) / sizeof(GLfloat), GL_FLOAT, false,
+                            offsetof(struct tex_vert, tex_coord));
+  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION, 0);
+}
+
 struct gf_obj *gf_obj_create_box() {
   if (gf_obj_list.count + 1 >= gf_obj_list.capacity) {
     gf_log(DEBUG_LOG,
@@ -211,17 +227,6 @@ struct gf_obj *gf_obj_create_box() {
   glCreateVertexArrays(1, &obj->vao);
   glVertexArrayVertexBuffer(obj->vao, 0, obj->vbo, 0, sizeof(struct tex_vert));
   glVertexArrayElementBuffer(obj->vao, obj->ebo);
-  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_VERT_LOCATION);
-  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_VERT_LOCATION,
-                            sizeof(vertex) / sizeof(GLfloat), GL_FLOAT, false,
-                            offsetof(struct tex_vert, pos));
-  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_VERT_LOCATION, 0);
-
-  glEnableVertexArrayAttrib(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION);
-  glVertexArrayAttribFormat(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION,
-                            sizeof(vec2) / sizeof(GLfloat), GL_FLOAT, false,
-                            offsetof(struct tex_vert, tex_coord));
-  glVertexArrayAttribBinding(obj->vao, GF_ATTRIB_TEX_COORD_LOCATION, 0);
 
   obj->state = (struct obj_state){
       .transform =
@@ -235,6 +240,7 @@ struct gf_obj *gf_obj_create_box() {
               .dirty = true,
           },
   };
+  obj->shader = NULL;
   return obj;
 }
 
@@ -255,7 +261,7 @@ GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
 }
 
 GLuint gf_obj_create_attr(const struct gf_obj *obj, GLuint binding_index,
-                          const char* name, GLenum type) {
+                          const char *name, GLenum type) {
   GLuint location = gf_shader_get_attr_location(obj->shader, name);
 
   GLuint instanced_attr_buffer;
@@ -289,6 +295,7 @@ bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
     return false;
   }
   obj->shader = shader;
+  gf_obj_setup_attrs(obj);
   return true;
 }
 
