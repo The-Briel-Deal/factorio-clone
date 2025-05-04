@@ -10,7 +10,6 @@
 #define GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX  1
 
 #define GF_BACKGROUND_ATTRIB_TEX_INDEX_LOCATION 2
-#define GF_BACKGROUND_UNIFORM_TEX_MAP           5
 
 #define GF_BACKGROUND_UBO_TILE_STATE            1
 
@@ -186,7 +185,7 @@ struct gf_background *gf_background_create() {
       "shader/background_vert.glsl", "shader/background_frag.glsl");
   gf_obj_set_shader(background->obj, shader);
   gf_obj_set_texture(background->obj, "backgroundTex", GF_TEXTURE_GRASS_1);
-  gf_obj_set_vec4v(background->obj, GF_BACKGROUND_UNIFORM_TEX_MAP,
+  gf_obj_set_vec4v(background->obj, "textureMap",
                    sizeof(texture_positions) / sizeof(*texture_positions),
                    (void *)texture_positions);
   background->tex_offset_attr_buf = gf_obj_create_attr(

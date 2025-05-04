@@ -9,7 +9,7 @@ layout(std140) uniform TileState {
   int tileSize;
   int tilesPerRow;
 };
-layout(location = 5) uniform vec4 textureMap[16];
+uniform vec4 textureMap[16];
 
 out vec2 texCoord;
 

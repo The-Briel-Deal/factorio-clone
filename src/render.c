@@ -345,6 +345,11 @@ void gf_obj_commit_state(struct gf_obj *obj) {
   gf_shader_commit_state(obj->shader);
 }
 
+// TODO: Cache uniform locations.
+static int gf_obj_get_uniform_location(struct gf_obj *obj, const char *name) {
+  return glGetUniformLocation(obj->shader->program, name);
+}
+
 void gf_obj_set_int(struct gf_obj *obj, int location, int val) {
   glProgramUniform1i(obj->shader->program, location, val);
 }
@@ -352,7 +357,8 @@ void gf_obj_set_int_by_name(struct gf_obj *obj, char *name, int val) {
   int location = glGetUniformLocation(obj->shader->program, name);
   glProgramUniform1i(obj->shader->program, location, val);
 }
-void gf_obj_set_vec4v(struct gf_obj *obj, int location, int count, void *val) {
+void gf_obj_set_vec4v(struct gf_obj *obj, char *name, int count, void *val) {
+  int location = gf_obj_get_uniform_location(obj, name);
   glProgramUniform4fv(obj->shader->program, location, count, val);
 }
 
