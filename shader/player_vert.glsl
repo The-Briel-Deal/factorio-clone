@@ -1,6 +1,6 @@
 #version 450 core
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aTexCoord;
+in vec2 aPos;
+in vec2 aTexCoord;
 layout(std140) uniform Matrices {
   mat4 projection;
   mat4 model;
