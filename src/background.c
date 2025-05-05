@@ -194,7 +194,7 @@ struct gf_background *gf_background_create() {
 
   background->tile_state_buf =
       gf_obj_create_ubo(background->obj, sizeof(background->tile_state),
-                        "TileState", GF_BACKGROUND_UBO_TILE_STATE);
+                        "TileState");
 
   gf_background_commit_state(background);
 

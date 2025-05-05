@@ -44,11 +44,14 @@ struct gf_shader {
 
 STATIC_LIST(gf_shader_list, struct gf_shader, SHADER_PROGRAM_LIST_MAX)
 
+
 struct gf_obj {
   GLuint vbo;
   GLuint vao;
   GLuint ebo;
   GLuint ubo_mat;
+  GLsizei ubo_count;
+  GLuint ubos[16];
   struct obj_state {
     struct transform {
       tf_scale scale;
@@ -245,20 +248,28 @@ void gf_obj_setup_attrs(struct gf_obj *obj) {
 }
 
 
-GLuint gf_obj_create_ubo(const struct gf_obj *obj, uint size, char *name,
-                         uint binding) {
-  GLuint ubo;
+GLuint gf_obj_create_ubo(struct gf_obj *obj, uint size, char *name) {
+  assert(obj->ubo_count < sizeof(obj->ubos));
+
+  // Binding point is going to be the next available index in our ubo list.
+  GLsizei binding_point = obj->ubo_count++;
+  GLuint *ubo           = &obj->ubos[binding_point];
+
   // Create buf.
-  glCreateBuffers(1, &ubo);
-  glNamedBufferData(ubo, size, NULL, GL_DYNAMIC_DRAW);
+  glCreateBuffers(1, ubo);
+  glNamedBufferData(*ubo, size, NULL, GL_DYNAMIC_DRAW);
 
   // Bind to block index.
   GLuint block_index = glGetUniformBlockIndex(obj->shader->program, name);
-  glUniformBlockBinding(obj->shader->program, block_index, binding);
+  glUniformBlockBinding(obj->shader->program, block_index, binding_point);
 
-  glBindBufferBase(GL_UNIFORM_BUFFER, binding, ubo);
+  return *ubo;
+}
 
-  return ubo;
+void gf_obj_bind_ubos(struct gf_obj *obj) {
+  GLsizei count = obj->ubo_count;
+
+  glBindBuffersBase(GL_UNIFORM_BUFFER, 0, count, obj->ubos);
 }
 
 struct gf_obj *gf_obj_create_quad(struct gf_shader *shader) {
@@ -298,7 +309,8 @@ struct gf_obj *gf_obj_create_quad(struct gf_shader *shader) {
           },
   };
   gf_obj_setup_attrs(obj);
-  obj->ubo_mat = gf_obj_create_ubo(obj, sizeof(mat4) * 2, "Matrices", 2);
+  obj->ubo_count = 0;
+  obj->ubo_mat   = gf_obj_create_ubo(obj, sizeof(mat4) * 2, "Matrices");
   return obj;
 }
 
@@ -419,7 +431,7 @@ bool gf_obj_draw(struct gf_obj *obj) {
   glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
   glBindTextureUnit(0, obj->texture->gl_name);
   glBindVertexArray(obj->vao);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 2, obj->ubo_mat);
+  gf_obj_bind_ubos(obj);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   return true;
 }
@@ -429,7 +441,7 @@ bool gf_obj_draw_instanced(struct gf_obj *obj, int instance_count) {
   glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
   glBindTextureUnit(0, obj->texture->gl_name);
   glBindVertexArray(obj->vao);
-  glBindBufferBase(GL_UNIFORM_BUFFER, 2, obj->ubo_mat);
+  gf_obj_bind_ubos(obj);
   glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, instance_count);
   return true;
 }
