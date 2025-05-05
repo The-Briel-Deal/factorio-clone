@@ -30,7 +30,6 @@
 #define GF_TERRAIN_LOW_RES_15                  14
 #define GF_TERRAIN_LOW_RES_16                  15
 
-// TODO: Rename `instance_attr_*` to something better.
 struct gf_background {
   struct gf_obj *obj;
   GLuint tex_offset_attr_buf;
