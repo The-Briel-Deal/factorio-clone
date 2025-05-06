@@ -7,6 +7,9 @@
 #include <GL/glext.h>
 #include <stdint.h>
 
+#define GF_CHUNK_TILE_WIDTH                    8
+#define GF_CHUNK_TILE_HEIGHT                   8
+
 #define GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX 1
 
 #define GF_BACKGROUND_UBO_TILE_STATE           1
@@ -152,11 +155,6 @@ bool gf_background_commit_state(struct gf_background *background) {
   return set;
 }
 
-static void gf_background_set_tile_size(struct gf_background *background,
-                                        int tile_size) {
-  background->tile_state.tile_size = tile_size;
-  background->tile_state_dirty     = true;
-}
 static void gf_background_init_tiles(struct gf_background *background) {
   for (int i = 0; i < sizeof(background->tile_tex_indices); i++) {
     background->tile_tex_indices[i] = i % 16;
@@ -172,9 +170,14 @@ struct gf_background *gf_background_create() {
            gf_background_list.count, gf_background_list.capacity);
     return NULL;
   }
+
   struct gf_background *background =
       &gf_background_list.items[gf_background_list.count++];
-  gf_background_set_tile_size(background, GF_BACKGROUND_DEFAULT_TILE_SIZE);
+
+  background->tile_state.tiles_per_row = GF_CHUNK_TILE_WIDTH;
+  background->tile_state.tile_size     = GF_BACKGROUND_DEFAULT_TILE_SIZE;
+  background->tile_count = GF_CHUNK_TILE_WIDTH * GF_CHUNK_TILE_HEIGHT;
+
   gf_background_init_tiles(background);
 
   struct gf_shader *shader = gf_shader_create_from_paths(
@@ -191,34 +194,16 @@ struct gf_background *gf_background_create() {
   gf_obj_set_binding_divisor(background->obj,
                              GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX, 1);
 
-  background->tile_state_buf =
-      gf_obj_create_ubo(background->obj, sizeof(background->tile_state),
-                        "TileState");
+  background->tile_state_buf = gf_obj_create_ubo(
+      background->obj, sizeof(background->tile_state), "TileState");
 
   gf_background_commit_state(background);
 
   return background;
 }
 
-static void gf_background_sync_tiles(struct gf_background *background) {
-  const int tile_size = background->tile_state.tile_size;
-  assert(tile_size != 0);
-  const struct viewport_dimensions *viewport = gf_render_get_window_size();
-  // Add 1 to height and width to offset int division rounding down.
-  int width  = (viewport->width / tile_size) + 1;
-  int height = (viewport->height / tile_size) + 1;
-
-  int tiles_to_fill_screen = width * height;
-  if (background->tile_state.tiles_per_row != width ||
-      background->tile_count != tiles_to_fill_screen) {
-    background->tile_state.tiles_per_row = width;
-    background->tile_count               = tiles_to_fill_screen;
-    background->tile_state_dirty         = true;
-  }
-}
 
 void gf_background_draw(struct gf_background *background) {
-  gf_background_sync_tiles(background);
   gf_background_commit_state(background);
   gf_obj_draw_instanced(background->obj, background->tile_count);
 #ifdef GF_DEBUG_DRAW
