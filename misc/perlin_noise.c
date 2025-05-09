@@ -1,56 +1,16 @@
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-
-int noise2(int x, int y) {
-  srand(((x * 23479823) * (y * 8978243)) % 256);
-  return rand() % 256;
+float dotf(float xa, float ya, float xb, float yb) {
+  return (xa * xb) + (ya * yb);
 }
 
-float lin_inter(float x, float y, float s) {
-  return x + s * (y - x);
+float frandom(float x, float y) {
+  return fabsf(fmodf(sinf(dotf(x, y, 12.9898, 78.233)) * 43758.5453123, 1.0));
 }
 
-float smooth_inter(float x, float y, float s) {
-  return lin_inter(x, y, s * s * (3 - 2 * s));
-}
-
-float noise2d(float x, float y) {
-  int x_int    = x;
-  int y_int    = y;
-  float x_frac = x - x_int;
-  float y_frac = y - y_int;
-  int s        = noise2(x_int, y_int);
-  int t        = noise2(x_int + 1, y_int);
-  int u        = noise2(x_int, y_int + 1);
-  int v        = noise2(x_int + 1, y_int + 1);
-  float low    = smooth_inter(s, t, x_frac);
-  float high   = smooth_inter(u, v, x_frac);
-  return smooth_inter(low, high, y_frac);
-}
-
-float perlin2d(float x, float y, float freq, int depth) {
-  float xa  = x * freq;
-  float ya  = y * freq;
-  float amp = 1.0;
-  float fin = 0;
-  float div = 0.0;
-
-  int i;
-  for (i = 0; i < depth; i++) {
-    div += 256 * amp;
-    fin += noise2d(xa, ya) * amp;
-    amp /= 2;
-    xa *= 2;
-    ya *= 2;
-  }
-
-  return fin / div;
-}
-
-float my_noise(float x, float y, float freq, int depth) {
-  return noise2(x, y) / 256.0;
+float my_noise(float x, float y) {
+  return frandom(x, y);
 }
 
 int main(int argc, char *argv[]) {
@@ -59,7 +19,7 @@ int main(int argc, char *argv[]) {
   for (y = 0; y < 50; y++) {
     printf("|");
     for (x = 0; x < 50; x++) {
-      int val = floorf(perlin2d(x, y, 0.1, 4) * 255);
+      int val = floorf(my_noise(x, y) * 255);
       printf("\x1b[48;2;%i;%i;%im \x1b[0m", val, val, val);
     }
     printf("|\n");
