@@ -18,6 +18,10 @@ float mix(float a, float b, float fract) {
   return a + b;
 }
 
+float fade(float f) {
+  return (6 * powf(f, 5)) - (15 * pow(f, 4)) + (10 * pow(f, 3));
+}
+
 float gf_noise(vec2s v, float freq) {
   v.x *= freq;
   v.y *= freq;
@@ -40,6 +44,7 @@ float gf_noise(vec2s v, float freq) {
   float top_mixed = mix(top_right_rand, top_left_rand, v.x - left);
   float bot_mixed = mix(bot_right_rand, bot_left_rand, v.x - left);
   float mixed     = mix(top_mixed, bot_mixed, v.y - bot);
+  float faded     = fade(mixed);
 
   return mixed;
 }
