@@ -37,8 +37,8 @@ float gf_noise(vec2s v, float freq) {
   float bot_left_rand  = frandom(bot_left);
   float bot_right_rand = frandom(bot_right);
 
-  float top_mixed = mix(top_left_rand, top_right_rand, v.x - left);
-  float bot_mixed = mix(bot_left_rand, bot_right_rand, v.x - left);
+  float top_mixed = mix(top_right_rand, top_left_rand, v.x - left);
+  float bot_mixed = mix(bot_right_rand, bot_left_rand, v.x - left);
   float mixed     = mix(top_mixed, bot_mixed, v.y - bot);
 
   return mixed;
