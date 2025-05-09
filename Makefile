@@ -83,8 +83,13 @@ build/noise: build/noise.o | build/
 factoriclone: build/factoriclone
 run: build/factoriclone
 	exec $<
+
 test: build/test/test
 run-test: build/test/test
+	exec $<
+
+noise: build/noise
+run-noise: build/noise
 	exec $<
 fmt:
 	clang-format -i ./include/* ./src/* ./test/src/* ./test/include/*
