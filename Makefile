@@ -75,6 +75,10 @@ build/test/%.o: test/src/%.c $(TEST_HEADERS) | build/ build/test/
 build/test/:
 	mkdir -p build/test
 
+# noise example.
+build/noise: build/noise.o | build/
+	gcc examples/noise.c build/noise.o $(CFLAGS) -o build/noise
+
 .PHONY: factoriclone run test run-test fmt
 factoriclone: build/factoriclone
 run: build/factoriclone
