@@ -24,7 +24,11 @@ ifeq (${GF_DEBUG_NOISE_VIS}, 1)
 	CFLAGS += -DGF_DEBUG_NOISE_VIS
 endif
 
+test: CFLAGS += -DGF_TESTING -g
+test: TEST_CFLAGS += -DGF_TESTING -g
+
 TEST_CFLAGS := $(CFLAGS) -Itest/include
+
 
 build/:
 	mkdir -p build
@@ -88,8 +92,10 @@ run: build/factoriclone
 	exec $<
 
 test: build/test/test
-run-test: build/test/test
-	exec $<
+run-test: test
+	exec build/test/test
+dbg-test: test
+	exec gdb -ex run build/test/test
 
 noise: build/noise
 run-noise: build/noise

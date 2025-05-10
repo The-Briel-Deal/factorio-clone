@@ -1,3 +1,4 @@
+#include "background.h"
 #include "common.h"
 #include "gf_math.h"
 #include "log.h"
@@ -10,8 +11,6 @@
 #include <math.h>
 #include <stdint.h>
 
-#define GF_CHUNK_TILE_WIDTH                    8
-#define GF_CHUNK_TILE_HEIGHT                   8
 
 #define GF_BACKGROUND_ATTRIB_TEX_BINDING_INDEX 1
 
@@ -36,33 +35,6 @@
 #define GF_TERRAIN_LOW_RES_15                  14
 #define GF_TERRAIN_LOW_RES_16                  15
 
-struct gf_quad_bounds {
-  float top;
-  float bottom;
-  float left;
-  float right;
-};
-
-typedef struct gf_quad_bounds gf_terrain_texture_pos;
-typedef struct gf_quad_bounds gf_viewport_bounds;
-
-
-struct gf_background {
-  struct gf_obj *obj;
-  GLuint tex_offset_attr_buf;
-  uint8_t tile_tex_indices[GF_CHUNK_TILE_HEIGHT * GF_CHUNK_TILE_WIDTH];
-
-  bool tile_state_dirty;
-  GLuint tile_state_buf;
-  struct gf_tile_state {
-    int tile_size;
-    int tiles_per_row;
-  } tile_state;
-
-  int tile_count;
-
-  gf_viewport_bounds viewport_bounds;
-};
 
 STATIC_LIST(gf_background_list, struct gf_background, 128)
 

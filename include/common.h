@@ -35,3 +35,4 @@
 #else
 #define STATIC_UNLESS_TEST
 #endif
+#endif
