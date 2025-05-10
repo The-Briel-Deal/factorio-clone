@@ -39,7 +39,7 @@
 struct gf_background {
   struct gf_obj *obj;
   GLuint tex_offset_attr_buf;
-  uint8_t tile_tex_indices[1024];
+  uint8_t tile_tex_indices[GF_CHUNK_TILE_HEIGHT * GF_CHUNK_TILE_WIDTH];
 
   bool tile_state_dirty;
   GLuint tile_state_buf;
