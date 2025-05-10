@@ -48,7 +48,8 @@ struct gf_background {
 };
 
 #ifdef GF_TESTING
-vec2s gf_background_first_visible_chunk(struct gf_background *background);
+vec2s gf_background_first_visible_chunk(const struct gf_background *background);
+int gf_background_visible_chunk_count(const struct gf_background *background);
 #endif
 
 #endif
