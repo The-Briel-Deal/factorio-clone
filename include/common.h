@@ -30,6 +30,8 @@
       .count    = 0,                                                           \
       .capacity = size,                                                        \
   };
-
-
+#ifndef GF_TESTING
+#define STATIC_UNLESS_TEST static
+#else
+#define STATIC_UNLESS_TEST
 #endif

@@ -161,7 +161,7 @@ static vec2s gf_background_chunk_size(struct gf_background *background) {
   return chunk_size;
 }
 
-static vec2s
+STATIC_UNLESS_TEST vec2s
 gf_background_first_visible_chunk(struct gf_background *background) {
   gf_viewport_bounds viewport_bounds = background->viewport_bounds;
   vec2s viewport_bottom_left = {viewport_bounds.left, viewport_bounds.bottom};
