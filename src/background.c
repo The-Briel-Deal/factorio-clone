@@ -36,6 +36,17 @@
 #define GF_TERRAIN_LOW_RES_15                  14
 #define GF_TERRAIN_LOW_RES_16                  15
 
+struct gf_quad_bounds {
+  float top;
+  float bottom;
+  float left;
+  float right;
+};
+
+typedef struct gf_quad_bounds gf_terrain_texture_pos;
+typedef struct gf_quad_bounds gf_viewport_bounds;
+
+
 struct gf_background {
   struct gf_obj *obj;
   GLuint tex_offset_attr_buf;
@@ -49,16 +60,12 @@ struct gf_background {
   } tile_state;
 
   int tile_count;
+
+  gf_viewport_bounds viewport_bounds;
 };
 
 STATIC_LIST(gf_background_list, struct gf_background, 128)
 
-struct gf_terrain_texture_pos {
-  float top;
-  float bottom;
-  float left;
-  float right;
-};
 
 #define TEX_MAP_H  576
 #define TEX_MAP_W  4096
@@ -67,7 +74,7 @@ struct gf_terrain_texture_pos {
 #define NH(height) ((float)height) / ((float)TEX_MAP_H)
 #define NW(width)  ((float)width) / ((float)TEX_MAP_W)
 
-static const struct gf_terrain_texture_pos texture_positions[] = {
+static const gf_terrain_texture_pos texture_positions[] = {
     [GF_TERRAIN_LOW_RES_1]  = {.top    = NH(TEX_MAP_H),
                                .bottom = NH(TEX_MAP_H - 64),
                                .left   = NW(0 + (64 * 0)),
@@ -134,9 +141,52 @@ static const struct gf_terrain_texture_pos texture_positions[] = {
                                .right  = NW(64 + (64 * 15))},
 };
 
+static void gf_background_sync_viewport(struct gf_background *background) {
+  const struct viewport_dimensions *viewport_size = gf_render_get_window_size();
+  // TODO: Once I center camera on player, we need to take the camera pos into
+  // account.
+  background->viewport_bounds =
+      (gf_viewport_bounds){.top    = (float)viewport_size->height,
+                           .right  = (float)viewport_size->width,
+                           .bottom = 0.0,
+                           .left   = 0.0};
+}
+
+//! The size of a chunk in world coords.
+static vec2s gf_background_chunk_size(struct gf_background *background) {
+  // Since tiles are squares, `tile_size` is just the size of either side.
+  int tile_size    = background->tile_state.tile_size;
+  vec2s chunk_size = {tile_size * GF_CHUNK_TILE_WIDTH,
+                      tile_size * GF_CHUNK_TILE_HEIGHT};
+  return chunk_size;
+}
+
+static vec2s
+gf_background_first_visible_chunk(struct gf_background *background) {
+  gf_viewport_bounds viewport_bounds = background->viewport_bounds;
+  vec2s viewport_bottom_left = {viewport_bounds.left, viewport_bounds.bottom};
+  vec2s chunk_size           = gf_background_chunk_size(background);
+
+  // Divide viewport by chunk size.
+  viewport_bottom_left.x /= chunk_size.x;
+  viewport_bottom_left.y /= chunk_size.y;
+
+  // Floor viewport to get to nearest chunk.
+  viewport_bottom_left.x = floorf(viewport_bottom_left.x);
+  viewport_bottom_left.y = floorf(viewport_bottom_left.y);
+
+  // Size viewport back up to world pos.
+  viewport_bottom_left.x *= chunk_size.x;
+  viewport_bottom_left.y *= chunk_size.y;
+
+  return viewport_bottom_left;
+}
+
+
 bool gf_background_commit_state(struct gf_background *background) {
   bool set = false;
   if (background->tile_state_dirty) {
+    gf_background_sync_viewport(background);
     gf_obj_set_scale(background->obj,
                      (tf_scale){background->tile_state.tile_size,
                                 background->tile_state.tile_size});
@@ -168,6 +218,7 @@ static void gf_background_init_tiles(struct gf_background *background) {
   background->tile_state_dirty = true;
 }
 
+
 struct gf_background *gf_background_create() {
   if (gf_background_list.count + 1 >= gf_background_list.capacity) {
     gf_log(DEBUG_LOG,
@@ -183,6 +234,7 @@ struct gf_background *gf_background_create() {
   background->tile_state.tiles_per_row = GF_CHUNK_TILE_WIDTH;
   background->tile_state.tile_size     = GF_BACKGROUND_DEFAULT_TILE_SIZE;
   background->tile_count = GF_CHUNK_TILE_WIDTH * GF_CHUNK_TILE_HEIGHT;
+  gf_background_sync_viewport(background);
 
   gf_background_init_tiles(background);
 
