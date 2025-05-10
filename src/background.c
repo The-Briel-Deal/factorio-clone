@@ -185,7 +185,8 @@ bool gf_background_commit_state(struct gf_background *background) {
                                 background->tile_state.tile_size});
     float starting_position = background->tile_state.tile_size / 2.0f;
     gf_obj_set_pos(background->obj,
-                   (tf_pos){starting_position, starting_position});
+                   (tf_pos){starting_position + background->offset.x,
+                            starting_position + background->offset.y});
     gf_obj_update_buffer_data(background->tex_offset_attr_buf,
                               background->tile_tex_indices,
                               sizeof(background->tile_tex_indices));
@@ -211,6 +212,11 @@ static void gf_background_init_tiles(struct gf_background *background) {
   background->tile_state_dirty = true;
 }
 
+static void gf_background_update_offset(struct gf_background *background,
+                                        vec2s offset) {
+  background->offset           = offset;
+  background->tile_state_dirty = true;
+}
 
 struct gf_background *gf_background_create() {
   if (gf_background_list.count + 1 >= gf_background_list.capacity) {
@@ -227,6 +233,7 @@ struct gf_background *gf_background_create() {
   background->tile_state.tiles_per_row = GF_CHUNK_TILE_WIDTH;
   background->tile_state.tile_size     = GF_BACKGROUND_DEFAULT_TILE_SIZE;
   background->tile_count = GF_CHUNK_TILE_WIDTH * GF_CHUNK_TILE_HEIGHT;
+  gf_background_update_offset(background, (vec2s){0.0f, 0.0f});
   gf_background_sync_viewport(background);
 
   gf_background_init_tiles(background);
@@ -255,19 +262,31 @@ struct gf_background *gf_background_create() {
 
 
 void gf_background_draw(struct gf_background *background) {
-  gf_background_commit_state(background);
+  vec2s chunk_size     = gf_background_chunk_size(background);
+  vec2s first_chunk    = gf_background_first_visible_chunk(background);
+  vec2s visible_chunks = gf_background_visible_chunks(background);
+  int chunk_count      = visible_chunks.x * visible_chunks.y;
+  for (int i = 0; i < chunk_count; i++) {
+    int col = i % (int)(visible_chunks.x);
+    int row = i / (int)(visible_chunks.x);
+    assert(row < visible_chunks.y);
+    vec2s offset = {.x = (col * chunk_size.x) + first_chunk.x,
+                    .y = (row * chunk_size.y) + first_chunk.y};
+    gf_background_update_offset(background, offset);
+    gf_background_commit_state(background);
 #ifdef GF_DEBUG_NOISE_VIS
-  gf_obj_set_int(background->obj, "debug_noise_vis", true);
+    gf_obj_set_int(background->obj, "debug_noise_vis", true);
 #endif
-  gf_obj_draw_instanced(background->obj, background->tile_count);
+    gf_obj_draw_instanced(background->obj, background->tile_count);
 #ifdef GF_DEBUG_NOISE_VIS
-  gf_obj_set_int(background->obj, "debug_noise_vis", false);
+    gf_obj_set_int(background->obj, "debug_noise_vis", false);
 #endif
 #ifdef GF_DEBUG_DRAW
-  gf_obj_set_int(background->obj, "debug", true);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  gf_obj_draw_instanced(background->obj, background->tile_count);
-  gf_obj_set_int(background->obj, "debug", false);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    gf_obj_set_int(background->obj, "debug", true);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    gf_obj_draw_instanced(background->obj, background->tile_count);
+    gf_obj_set_int(background->obj, "debug", false);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
+  }
 }

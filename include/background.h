@@ -4,9 +4,7 @@
 #include <GL/gl.h>
 #include <stdbool.h>
 
-#ifdef GF_TESTING
 #include "gf_math.h"
-#endif
 
 #define GF_CHUNK_TILE_WIDTH  8
 #define GF_CHUNK_TILE_HEIGHT 8
@@ -44,6 +42,7 @@ struct gf_background {
 
   int tile_count;
 
+	vec2s offset;
   gf_viewport_bounds viewport_bounds;
 };
 
