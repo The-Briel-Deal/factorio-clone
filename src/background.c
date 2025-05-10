@@ -202,12 +202,20 @@ bool gf_background_commit_state(struct gf_background *background) {
   return set;
 }
 
-static void gf_background_init_tiles(struct gf_background *background) {
+static void gf_background_update_tiles(struct gf_background *background) {
   for (int i = 0; i < sizeof(background->tile_tex_indices); i++) {
-    int col = i % background->tile_state.tiles_per_row;
-    int row = i / background->tile_state.tiles_per_row;
-    background->tile_tex_indices[i] =
-        (uint8_t)floorf(gf_noise((vec2s){col, row}, 0.2) * 15);
+    int col                         = i % background->tile_state.tiles_per_row;
+    int row                         = i / background->tile_state.tiles_per_row;
+    background->tile_tex_indices[i] = (uint8_t)floorf(
+        gf_noise(
+            (vec2s){
+                .x = col + (background->offset.x /
+                            ((float)background->tile_state.tile_size)),
+                .y = row + (background->offset.y /
+                            ((float)background->tile_state.tile_size)),
+            },
+            0.2) *
+        15);
   }
   background->tile_state_dirty = true;
 }
@@ -236,7 +244,7 @@ struct gf_background *gf_background_create() {
   gf_background_update_offset(background, (vec2s){0.0f, 0.0f});
   gf_background_sync_viewport(background);
 
-  gf_background_init_tiles(background);
+  gf_background_update_tiles(background);
 
   struct gf_shader *shader = gf_shader_create_from_paths(
       "shader/background_vert.glsl", "shader/background_frag.glsl");
@@ -273,6 +281,7 @@ void gf_background_draw(struct gf_background *background) {
     vec2s offset = {.x = (col * chunk_size.x) + first_chunk.x,
                     .y = (row * chunk_size.y) + first_chunk.y};
     gf_background_update_offset(background, offset);
+		gf_background_update_tiles(background);
     gf_background_commit_state(background);
 #ifdef GF_DEBUG_NOISE_VIS
     gf_obj_set_int(background->obj, "debug_noise_vis", true);
