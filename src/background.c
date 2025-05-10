@@ -133,6 +133,20 @@ static vec2s gf_background_chunk_size(struct gf_background *background) {
   return chunk_size;
 }
 
+STATIC_UNLESS_TEST int
+gf_background_visible_chunk_count(struct gf_background *background) {
+  gf_viewport_bounds viewport_bounds = background->viewport_bounds;
+  vec2s chunk_size                   = gf_background_chunk_size(background);
+  // We need to round up because we may only see a portion of a chunk on the
+  // edges.
+  float chunks_wide =
+      ceilf((viewport_bounds.right - viewport_bounds.left) / chunk_size.x);
+  float chunks_high =
+      ceilf((viewport_bounds.top - viewport_bounds.bottom) / chunk_size.y);
+
+  return chunks_wide * chunks_high;
+}
+
 STATIC_UNLESS_TEST vec2s
 gf_background_first_visible_chunk(struct gf_background *background) {
   gf_viewport_bounds viewport_bounds = background->viewport_bounds;
