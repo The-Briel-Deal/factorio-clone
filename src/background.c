@@ -1,10 +1,13 @@
 #include "common.h"
 #include "gf_math.h"
 #include "log.h"
+#include "noise.h"
 #include "render.h"
 #include "texture.h"
+
 #include <GL/gl.h>
 #include <GL/glext.h>
+#include <math.h>
 #include <stdint.h>
 
 #define GF_CHUNK_TILE_WIDTH                    8
@@ -157,7 +160,10 @@ bool gf_background_commit_state(struct gf_background *background) {
 
 static void gf_background_init_tiles(struct gf_background *background) {
   for (int i = 0; i < sizeof(background->tile_tex_indices); i++) {
-    background->tile_tex_indices[i] = i % 16;
+    int col = i % background->tile_state.tiles_per_row;
+    int row = i / background->tile_state.tiles_per_row;
+    background->tile_tex_indices[i] =
+        (uint8_t)floorf(gf_noise((vec2s){col, row}, 1.0) * 15);
   }
   background->tile_state_dirty = true;
 }
