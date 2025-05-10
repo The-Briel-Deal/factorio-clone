@@ -163,7 +163,7 @@ static void gf_background_init_tiles(struct gf_background *background) {
     int col = i % background->tile_state.tiles_per_row;
     int row = i / background->tile_state.tiles_per_row;
     background->tile_tex_indices[i] =
-        (uint8_t)floorf(gf_noise((vec2s){col, row}, 1.0) * 15);
+        (uint8_t)floorf(gf_noise((vec2s){col, row}, 0.2) * 15);
   }
   background->tile_state_dirty = true;
 }
@@ -211,7 +211,13 @@ struct gf_background *gf_background_create() {
 
 void gf_background_draw(struct gf_background *background) {
   gf_background_commit_state(background);
+#ifdef GF_DEBUG_NOISE_VIS
+  gf_obj_set_int(background->obj, "debug_noise_vis", true);
+#endif
   gf_obj_draw_instanced(background->obj, background->tile_count);
+#ifdef GF_DEBUG_NOISE_VIS
+  gf_obj_set_int(background->obj, "debug_noise_vis", false);
+#endif
 #ifdef GF_DEBUG_DRAW
   gf_obj_set_int(background->obj, "debug", true);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

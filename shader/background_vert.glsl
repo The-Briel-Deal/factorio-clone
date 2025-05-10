@@ -16,6 +16,7 @@ layout(std140) uniform TileState {
 uniform vec4 textureMap[16];
 
 out vec2 texCoord;
+out vec4 testColor;
 
 void main() {
   vec4 texCoords     = textureMap[aTexIndex];
@@ -40,4 +41,6 @@ void main() {
   } else {
     texCoord.y = texTop;
   }
+
+  testColor = vec4(aTexIndex / 16.0, aTexIndex / 16.0, aTexIndex / 16.0, 1.0);
 }

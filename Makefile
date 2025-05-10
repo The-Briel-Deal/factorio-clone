@@ -20,6 +20,9 @@ endif
 ifeq (${GF_DEBUG_DRAW}, 1)
 	CFLAGS += -DGF_DEBUG_DRAW
 endif
+ifeq (${GF_DEBUG_NOISE_VIS}, 1)
+	CFLAGS += -DGF_DEBUG_NOISE_VIS
+endif
 
 TEST_CFLAGS := $(CFLAGS) -Itest/include
 
