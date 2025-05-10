@@ -281,7 +281,7 @@ void gf_background_draw(struct gf_background *background) {
     vec2s offset = {.x = (col * chunk_size.x) + first_chunk.x,
                     .y = (row * chunk_size.y) + first_chunk.y};
     gf_background_update_offset(background, offset);
-		gf_background_update_tiles(background);
+    gf_background_update_tiles(background);
     gf_background_commit_state(background);
 #ifdef GF_DEBUG_NOISE_VIS
     gf_obj_set_int(background->obj, "debug_noise_vis", true);

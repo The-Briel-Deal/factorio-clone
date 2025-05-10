@@ -42,7 +42,7 @@ struct gf_background {
 
   int tile_count;
 
-	vec2s offset;
+  vec2s offset;
   gf_viewport_bounds viewport_bounds;
 };
 
