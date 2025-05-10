@@ -4,6 +4,10 @@
 #include <GL/gl.h>
 #include <stdbool.h>
 
+#ifdef GF_TESTING
+#include "gf_math.h"
+#endif
+
 #define GF_CHUNK_TILE_WIDTH  8
 #define GF_CHUNK_TILE_HEIGHT 8
 
@@ -42,5 +46,9 @@ struct gf_background {
 
   gf_viewport_bounds viewport_bounds;
 };
+
+#ifdef GF_TESTING
+vec2s gf_background_first_visible_chunk(struct gf_background *background);
+#endif
 
 #endif

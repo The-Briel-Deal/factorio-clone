@@ -6,9 +6,6 @@
 #include "gf_math.h"
 
 
-extern vec2s
-gf_background_first_visible_chunk(struct gf_background *background);
-
 static void test_background_first_visible_chunk() {
   struct gf_background background;
   vec2s chunk;
