@@ -8,6 +8,7 @@
 
 #include <GL/gl.h>
 #include <GL/glext.h>
+#include <assert.h>
 #include <math.h>
 #include <stdint.h>
 
@@ -125,26 +126,13 @@ static void gf_background_sync_viewport(struct gf_background *background) {
 }
 
 //! The size of a chunk in world coords.
-static vec2s gf_background_chunk_size(const struct gf_background *background) {
+STATIC_UNLESS_TEST vec2s
+gf_background_chunk_size(const struct gf_background *background) {
   // Since tiles are squares, `tile_size` is just the size of either side.
   int tile_size    = background->tile_state.tile_size;
   vec2s chunk_size = {tile_size * GF_CHUNK_TILE_WIDTH,
                       tile_size * GF_CHUNK_TILE_HEIGHT};
   return chunk_size;
-}
-
-STATIC_UNLESS_TEST int
-gf_background_visible_chunk_count(const struct gf_background *background) {
-  gf_viewport_bounds viewport_bounds = background->viewport_bounds;
-  vec2s chunk_size                   = gf_background_chunk_size(background);
-  // We need to round up because we may only see a portion of a chunk on the
-  // edges.
-  float chunks_wide =
-      ceilf((viewport_bounds.right - viewport_bounds.left) / chunk_size.x);
-  float chunks_high =
-      ceilf((viewport_bounds.top - viewport_bounds.bottom) / chunk_size.y);
-
-  return chunks_wide * chunks_high;
 }
 
 STATIC_UNLESS_TEST vec2s
@@ -171,6 +159,22 @@ gf_background_first_visible_chunk(const struct gf_background *background) {
   return viewport_bottom_left;
 }
 
+STATIC_UNLESS_TEST vec2s
+gf_background_visible_chunks(const struct gf_background *background) {
+  gf_viewport_bounds viewport_bounds = background->viewport_bounds;
+  vec2s chunk_size                   = gf_background_chunk_size(background);
+  // We need to round up because we may only see a portion of a chunk on the
+  // edges.
+  float chunks_wide =
+      ceilf((viewport_bounds.right - viewport_bounds.left) / chunk_size.x);
+  float chunks_high =
+      ceilf((viewport_bounds.top - viewport_bounds.bottom) / chunk_size.y);
+
+  vec2s chunks_in_dirs = (vec2s){chunks_wide + 1, chunks_high + 1};
+
+
+  return chunks_in_dirs;
+}
 
 bool gf_background_commit_state(struct gf_background *background) {
   bool set = false;
