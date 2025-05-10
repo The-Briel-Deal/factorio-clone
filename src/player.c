@@ -134,6 +134,10 @@ void gf_player_update_state(struct gf_player *player, double delta_time) {
   gf_obj_set_pos(player->obj, pos);
 }
 
+void gf_player_focus_camera(const struct gf_player *player) {
+  gf_camera_set_focused_obj(player->obj);
+}
+
 void gf_player_draw(struct gf_player *player) {
 #ifdef GF_DEBUG_PLAYER_INPUT
   gf_debug_log_player_input(player->input_state);

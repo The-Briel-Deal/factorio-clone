@@ -63,9 +63,16 @@ struct gf_obj {
   struct gf_shader *shader;
   const struct gf_texture *texture;
   int texture_location;
+  vec2s last_commited_cam_pos;
 };
 
 STATIC_LIST(gf_obj_list, struct gf_obj, OBJ_LIST_MAX)
+
+const static struct gf_obj *camera_focused_obj = NULL;
+
+void gf_camera_set_focused_obj(const struct gf_obj *obj) {
+  camera_focused_obj = obj;
+}
 
 // TODO: Use a bool to know if viewport in shader is dirty.
 bool gf_render_update_window_size(int32_t width, int32_t height) {
@@ -90,10 +97,16 @@ void gf_obj_sync_projection_matrix(struct gf_obj *obj) {
          "Syncing projection matrix (h: %i, w: %i) to shader program '%i'.", h,
          w, obj->shader->program);
 
+  vec2s focused_pos = {0.0, 0.0};
+  if (camera_focused_obj != NULL)
+    focused_pos = camera_focused_obj->state.transform.pos;
+
   assert(h > 0);
   assert(w > 0);
   mat4 projection;
-  gf_ortho(0.0f, w, 0, h, -1.0, 1.0, projection);
+  gf_ortho((focused_pos.x - (0.5 * w)), (focused_pos.x + (0.5 * w)),
+           (focused_pos.y - (0.5 * h)), (focused_pos.y + (0.5 * h)), -1.0, 1.0,
+           projection);
 
   glNamedBufferSubData(obj->ubo_mat, 0, sizeof(projection), projection);
 }
@@ -103,10 +116,19 @@ void gf_obj_commit_projection(struct gf_obj *obj) {
   struct viewport_dimensions *last_vp =
                                  &obj->shader->state.last_committed_viewport,
                              *curr_vp = &render_state.viewport;
-  if (last_vp->height != curr_vp->height || last_vp->width != curr_vp->width) {
+  // TODO: Clean this up and break off camera pos stuff into helper func.
+  if (last_vp->height != curr_vp->height || last_vp->width != curr_vp->width ||
+      (camera_focused_obj != NULL &&
+       ((camera_focused_obj->state.transform.pos.x !=
+         obj->last_commited_cam_pos.x) ||
+        (camera_focused_obj->state.transform.pos.y !=
+         obj->last_commited_cam_pos.y)))) {
     last_vp->height = curr_vp->height;
     last_vp->width  = curr_vp->width;
     gf_obj_sync_projection_matrix(obj);
+  }
+  if (camera_focused_obj != NULL) {
+    obj->last_commited_cam_pos = camera_focused_obj->state.transform.pos;
   }
 }
 
@@ -281,8 +303,9 @@ struct gf_obj *gf_obj_create_quad(struct gf_shader *shader) {
     return NULL;
   }
 
-  struct gf_obj *obj = &gf_obj_list.items[gf_obj_list.count++];
-  obj->shader        = shader;
+  struct gf_obj *obj         = &gf_obj_list.items[gf_obj_list.count++];
+  obj->shader                = shader;
+  obj->last_commited_cam_pos = (vec2s){0.0f, 0.0f};
 
   glCreateBuffers(1, &obj->vbo);
   glNamedBufferStorage(obj->vbo, sizeof(struct box_verts), &square_verts,

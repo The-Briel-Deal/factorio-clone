@@ -12,4 +12,6 @@ void gf_player_update_state(struct gf_player *player, double delta_time);
 
 void gf_player_input_listener(xkb_keysym_t key, bool pressed, void *data);
 
+void gf_player_focus_camera(const struct gf_player *player);
+
 #endif

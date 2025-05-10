@@ -37,6 +37,7 @@ int main() {
   gf_log(INFO_LOG, "Version %s", glGetString(GL_VERSION));
 
   struct gf_player *player = gf_player_create();
+  gf_player_focus_camera(player);
   gf_window_register_input_listener(gf_player_input_listener, player);
 
   struct gf_background *background = gf_background_create();
