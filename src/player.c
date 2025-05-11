@@ -12,15 +12,15 @@
 #include "render.h"
 #include "texture.h"
 
-#define PLAYER_SPRITE_SHEET_CELL_HEIGHT 116
-#define PLAYER_SPRITE_SHEET_CELL_WIDTH  92
+#define PLAYER_SPRITE_SHEET_CELL_HEIGHT       116
+#define PLAYER_SPRITE_SHEET_CELL_WIDTH        92
+#define PLAYER_SPRITE_SHEET_CELL_COUNT_HEIGHT 8
+#define PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH  22
 
-#define PLAYER_LIST_MAX                 128
+#define PLAYER_LIST_MAX                       128
 
-#define PLAYER_SPEED                    300.0f
-#define PLAYER_LERP                     5.0f
-
-#define PLAYER_TEXTURE_PATH             "static/factorio-icon.png"
+#define PLAYER_SPEED                          300.0f
+#define PLAYER_LERP                           5.0f
 
 enum gf_player_input_state {
   GF_PLAYER_INPUT_UP    = 0b0001,
@@ -81,7 +81,7 @@ struct gf_player *gf_player_create() {
       "shader/player_vert.glsl", "shader/player_frag.glsl");
   player->obj = gf_obj_create_quad(shader);
   gf_obj_set_scale(player->obj, (vec2s){100, 100});
-  gf_obj_set_texture(player->obj, "playerTex", GF_TEXTURE_FACTORIO_ICON);
+  gf_obj_set_texture(player->obj, "playerTex", GF_TEXTURE_CHARACTER_IDLE_1);
   gf_obj_commit_state(player->obj);
 
   return player;
