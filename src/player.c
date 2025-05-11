@@ -12,12 +12,15 @@
 #include "render.h"
 #include "texture.h"
 
-#define PLAYER_LIST_MAX     128
+#define PLAYER_SPRITE_SHEET_CELL_HEIGHT 116
+#define PLAYER_SPRITE_SHEET_CELL_WIDTH  92
 
-#define PLAYER_SPEED        300.0f
-#define PLAYER_LERP         5.0f
+#define PLAYER_LIST_MAX                 128
 
-#define PLAYER_TEXTURE_PATH "static/factorio-icon.png"
+#define PLAYER_SPEED                    300.0f
+#define PLAYER_LERP                     5.0f
+
+#define PLAYER_TEXTURE_PATH             "static/factorio-icon.png"
 
 enum gf_player_input_state {
   GF_PLAYER_INPUT_UP    = 0b0001,
