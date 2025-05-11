@@ -46,7 +46,7 @@ struct gf_player {
   vec2s movement;
   enum gf_player_input_state input_state;
   enum gf_player_dir_facing dir_facing; // Corresponds to sprite sheet y pos.
-  uint sprite_col_index;                    // Corresponds to sprite sheet x pos.
+  uint sprite_col_index;                // Corresponds to sprite sheet x pos.
   float time_till_next_sprite;
 };
 
@@ -92,7 +92,7 @@ struct gf_player *gf_player_create() {
   player->input_state           = 0b0000;
   player->movement              = (vec2s){.x = 0.0, .y = 0.0};
   player->dir_facing            = GF_PLAYER_FACING_DOWN;
-  player->sprite_col_index          = 0;
+  player->sprite_col_index      = 0;
   player->time_till_next_sprite = PLAYER_TIME_BETWEEN_SPRITE_FRAMES;
 
   struct gf_shader *shader = gf_shader_create_from_paths(
