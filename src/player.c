@@ -1,6 +1,5 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
-#include <sys/types.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include "stb_image.h"
@@ -22,6 +21,8 @@
 #define PLAYER_SPEED                          300.0f
 #define PLAYER_LERP                           5.0f
 
+#define PLAYER_TIME_BETWEEN_SPRITE_FRAMES     (1.0f / 10.0f)
+
 enum gf_player_input_state {
   GF_PLAYER_INPUT_UP    = 0b0001,
   GF_PLAYER_INPUT_DOWN  = 0b0010,
@@ -29,10 +30,24 @@ enum gf_player_input_state {
   GF_PLAYER_INPUT_LEFT  = 0b1000,
 };
 
+enum gf_player_dir_facing {
+  GF_PLAYER_FACING_LEFT_UP    = 0,
+  GF_PLAYER_FACING_LEFT       = 1,
+  GF_PLAYER_FACING_DOWN_LEFT  = 2,
+  GF_PLAYER_FACING_DOWN       = 3,
+  GF_PLAYER_FACING_RIGHT_DOWN = 4,
+  GF_PLAYER_FACING_RIGHT      = 5,
+  GF_PLAYER_FACING_UP_RIGHT   = 6,
+  GF_PLAYER_FACING_UP         = 7,
+};
+
 struct gf_player {
   struct gf_obj *obj;
   vec2s movement;
   enum gf_player_input_state input_state;
+  enum gf_player_dir_facing dir_facing; // Corresponds to sprite sheet y pos.
+  uint sprite_col_index;                    // Corresponds to sprite sheet x pos.
+  float time_till_next_sprite;
 };
 
 STATIC_LIST(gf_player_list, struct gf_player, 128)
@@ -74,8 +89,11 @@ struct gf_player *gf_player_create() {
 
   struct gf_player *player = &gf_player_list.items[gf_player_list.count++];
 
-  player->input_state = 0b0000;
-  player->movement    = (vec2s){.x = 0.0, .y = 0.0};
+  player->input_state           = 0b0000;
+  player->movement              = (vec2s){.x = 0.0, .y = 0.0};
+  player->dir_facing            = GF_PLAYER_FACING_DOWN;
+  player->sprite_col_index          = 0;
+  player->time_till_next_sprite = PLAYER_TIME_BETWEEN_SPRITE_FRAMES;
 
   struct gf_shader *shader = gf_shader_create_from_paths(
       "shader/player_vert.glsl", "shader/player_frag.glsl");
@@ -129,6 +147,16 @@ void gf_player_update_state(struct gf_player *player, double delta_time) {
   gf_vec2s_scale(&move_by, PLAYER_SPEED * delta_time);
   gf_log(INFO_LOG, "Velocity: {x = %f, y = %f}", move_by.x, move_by.y);
 
+  player->time_till_next_sprite -= delta_time;
+
+  if (player->time_till_next_sprite <= 0.0f) {
+    player->time_till_next_sprite += PLAYER_TIME_BETWEEN_SPRITE_FRAMES;
+    // TODO: Make sure I am on the right row depending on movement dir. Change
+    // 80 to 22 since there are 22 columns in a row.
+    player->sprite_col_index =
+        (player->sprite_col_index + 1) % PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH;
+  }
+
   vec2s pos = gf_obj_get_pos(player->obj);
 
   pos.x += move_by.x;
@@ -145,6 +173,12 @@ void gf_player_draw(struct gf_player *player) {
 #ifdef GF_DEBUG_PLAYER_INPUT
   gf_debug_log_player_input(player->input_state);
 #endif
+  int sprite_index =
+      (player->dir_facing * PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH) +
+      player->sprite_col_index;
+  // TODO: Figure out a better way to manage player state. (probably use the
+  // same commit system used in background and obj)
+  gf_obj_set_int(player->obj, "spriteIndex", sprite_index);
   gf_obj_commit_state(player->obj);
   gf_obj_draw(player->obj);
 }
