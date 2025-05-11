@@ -111,18 +111,25 @@ void gf_obj_sync_projection_matrix(struct gf_obj *obj) {
   glNamedBufferSubData(obj->ubo_mat, 0, sizeof(projection), projection);
 }
 
+static bool gf_obj_camera_has_changed(const struct gf_obj *obj) {
+  if (camera_focused_obj == NULL)
+    return false;
+
+  vec2s cam_pos = camera_focused_obj->state.transform.pos;
+  if (cam_pos.x != obj->last_commited_cam_pos.x)
+    return true;
+  if (cam_pos.y == obj->last_commited_cam_pos.y)
+    return true;
+  return false;
+}
+
 void gf_obj_commit_projection(struct gf_obj *obj) {
   // Only sync if shader viewport out of sync with render state.
   struct viewport_dimensions *last_vp =
                                  &obj->shader->state.last_committed_viewport,
                              *curr_vp = &render_state.viewport;
-  // TODO: Clean this up and break off camera pos stuff into helper func.
   if (last_vp->height != curr_vp->height || last_vp->width != curr_vp->width ||
-      (camera_focused_obj != NULL &&
-       ((camera_focused_obj->state.transform.pos.x !=
-         obj->last_commited_cam_pos.x) ||
-        (camera_focused_obj->state.transform.pos.y !=
-         obj->last_commited_cam_pos.y)))) {
+      gf_obj_camera_has_changed(obj)) {
     last_vp->height = curr_vp->height;
     last_vp->width  = curr_vp->width;
     gf_obj_sync_projection_matrix(obj);
