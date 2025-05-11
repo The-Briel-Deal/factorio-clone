@@ -151,8 +151,6 @@ void gf_player_update_state(struct gf_player *player, double delta_time) {
 
   if (player->time_till_next_sprite <= 0.0f) {
     player->time_till_next_sprite += PLAYER_TIME_BETWEEN_SPRITE_FRAMES;
-    // TODO: Make sure I am on the right row depending on movement dir. Change
-    // 80 to 22 since there are 22 columns in a row.
     player->sprite_col_index =
         (player->sprite_col_index + 1) % PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH;
   }
