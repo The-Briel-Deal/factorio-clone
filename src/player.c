@@ -100,6 +100,8 @@ struct gf_player *gf_player_create() {
   player->obj = gf_obj_create_quad(shader);
   gf_obj_set_scale(player->obj, (vec2s){100, 100});
   gf_obj_set_texture(player->obj, "playerTex", GF_TEXTURE_CHARACTER_IDLE_1);
+  gf_obj_set_texture(player->obj, "playerTexMask",
+                     GF_TEXTURE_CHARACTER_IDLE_MASK_1);
   gf_obj_commit_state(player->obj);
 
   return player;

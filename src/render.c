@@ -62,8 +62,9 @@ struct gf_obj {
     } transform;
   } state;
   struct gf_shader *shader;
-  const struct gf_texture *texture;
-  int texture_location;
+  const struct gf_texture *textures[16];
+  int texture_locations[16];
+  int texture_count;
   vec2s last_commited_cam_pos;
 };
 
@@ -396,8 +397,10 @@ bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
 
 bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
                         enum gf_texture_type type) {
-  obj->texture          = gf_texture_get(type);
-  obj->texture_location = glGetUniformLocation(obj->shader->program, name);
+  int i = obj->texture_count++;
+
+  obj->textures[i]          = gf_texture_get(type);
+  obj->texture_locations[i] = glGetUniformLocation(obj->shader->program, name);
   return true;
 }
 
@@ -468,10 +471,16 @@ void gf_obj_set_vec4v(struct gf_obj *obj, char *name, int count, void *val) {
   glProgramUniform4fv(obj->shader->program, location, count, val);
 }
 
+void gf_obj_bind_textures(struct gf_obj *obj) {
+  for (int i = 0; i < obj->texture_count; i++) {
+    glProgramUniform1i(obj->shader->program, obj->texture_locations[i], i);
+    glBindTextureUnit(i, obj->textures[i]->gl_name);
+  }
+}
+
 bool gf_obj_draw(struct gf_obj *obj) {
   glUseProgram(obj->shader->program);
-  glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
-  glBindTextureUnit(0, obj->texture->gl_name);
+  gf_obj_bind_textures(obj);
   glBindVertexArray(obj->vao);
   gf_obj_bind_ubos(obj);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -480,8 +489,7 @@ bool gf_obj_draw(struct gf_obj *obj) {
 
 bool gf_obj_draw_instanced(struct gf_obj *obj, int instance_count) {
   glUseProgram(obj->shader->program);
-  glProgramUniform1i(obj->shader->program, obj->texture_location, 0);
-  glBindTextureUnit(0, obj->texture->gl_name);
+  gf_obj_bind_textures(obj);
   glBindVertexArray(obj->vao);
   gf_obj_bind_ubos(obj);
   glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, instance_count);
