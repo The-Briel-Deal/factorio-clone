@@ -130,14 +130,22 @@ void gf_player_input_listener(xkb_keysym_t key, bool pressed, void *data) {
 void gf_player_update_state(struct gf_player *player, double delta_time) {
   gf_log(INFO_LOG, "Delta Time: '%f'", delta_time);
   vec2s movement_vector = {.x = 0.0, .y = 0.0};
-  if (player->input_state & GF_PLAYER_INPUT_UP)
+  if (player->input_state & GF_PLAYER_INPUT_UP) {
+    player->dir_facing = GF_PLAYER_FACING_UP;
     movement_vector.y += 1.0;
-  if (player->input_state & GF_PLAYER_INPUT_RIGHT)
+  }
+  if (player->input_state & GF_PLAYER_INPUT_RIGHT) {
+    player->dir_facing = GF_PLAYER_FACING_RIGHT;
     movement_vector.x += 1.0;
-  if (player->input_state & GF_PLAYER_INPUT_DOWN)
+  }
+  if (player->input_state & GF_PLAYER_INPUT_DOWN) {
+    player->dir_facing = GF_PLAYER_FACING_DOWN;
     movement_vector.y -= 1.0;
-  if (player->input_state & GF_PLAYER_INPUT_LEFT)
+  }
+  if (player->input_state & GF_PLAYER_INPUT_LEFT) {
+    player->dir_facing = GF_PLAYER_FACING_LEFT;
     movement_vector.x -= 1.0;
+  }
 
   gf_vec2s_normalize(&movement_vector);
   gf_vec2s_lerp(&player->movement, &movement_vector, PLAYER_LERP * delta_time,
