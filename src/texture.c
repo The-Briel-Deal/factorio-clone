@@ -18,8 +18,11 @@ static struct gf_texture_map_item texture_map[] = {
     [GF_TEXTURE_CHARACTER_IDLE_1] = {.initialized = false,
                                      .img_path =
                                          "static/character/level1_idle.png"},
-    [GF_TEXTURE_GRASS_1]          = {.initialized = false,
-                                     .img_path    = "static/grass-1.png"}};
+    [GF_TEXTURE_CHARACTER_IDLE_MASK_1] =
+        {.initialized = false,
+         .img_path    = "static/character/level1_idle_mask.png"},
+    [GF_TEXTURE_GRASS_1] = {.initialized = false,
+                            .img_path    = "static/grass-1.png"}};
 
 void gf_stbi_setup() {
   stbi_set_flip_vertically_on_load(true);

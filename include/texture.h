@@ -17,6 +17,7 @@ struct gf_texture {
 enum gf_texture_type {
   GF_TEXTURE_FACTORIO_ICON,
   GF_TEXTURE_CHARACTER_IDLE_1,
+  GF_TEXTURE_CHARACTER_IDLE_MASK_1,
   GF_TEXTURE_GRASS_1,
 };
 
