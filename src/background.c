@@ -118,11 +118,7 @@ static void gf_background_sync_viewport(struct gf_background *background) {
   const struct viewport_dimensions *viewport_size = gf_render_get_window_size();
   // TODO: Once I center camera on player, we need to take the camera pos into
   // account.
-  background->viewport_bounds =
-      (gf_viewport_bounds){.top    = (float)viewport_size->height,
-                           .right  = (float)viewport_size->width,
-                           .bottom = 0.0,
-                           .left   = 0.0};
+  background->viewport_bounds = gf_camera_get_bounds();
 }
 
 //! The size of a chunk in world coords.

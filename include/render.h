@@ -34,8 +34,9 @@ struct viewport_dimensions {
 struct gf_obj;
 struct gf_shader;
 
-
 void gf_camera_set_focused_obj(const struct gf_obj *obj);
+struct gf_quad_bounds gf_camera_get_bounds();
+
 bool gf_render_update_window_size(int32_t height, int32_t width);
 const struct viewport_dimensions *gf_render_get_window_size();
 void gf_shader_commit_state(struct gf_shader *shader);
