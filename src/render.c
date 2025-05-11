@@ -118,7 +118,7 @@ static bool gf_obj_camera_has_changed(const struct gf_obj *obj) {
   vec2s cam_pos = camera_focused_obj->state.transform.pos;
   if (cam_pos.x != obj->last_commited_cam_pos.x)
     return true;
-  if (cam_pos.y == obj->last_commited_cam_pos.y)
+  if (cam_pos.y != obj->last_commited_cam_pos.y)
     return true;
   return false;
 }
