@@ -270,8 +270,10 @@ struct gf_background *gf_background_create() {
 
 
 void gf_background_draw(struct gf_background *background) {
-  vec2s chunk_size     = gf_background_chunk_size(background);
-  vec2s first_chunk    = gf_background_first_visible_chunk(background);
+  vec2s chunk_size  = gf_background_chunk_size(background);
+  vec2s first_chunk = gf_background_first_visible_chunk(background);
+  gf_log(INFO_LOG, "First Visible Chunk: (x = %f, y = %f)", first_chunk.x,
+         first_chunk.y);
   vec2s visible_chunks = gf_background_visible_chunks(background);
   int chunk_count      = visible_chunks.x * visible_chunks.y;
   for (int i = 0; i < chunk_count; i++) {

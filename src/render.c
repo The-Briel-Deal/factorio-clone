@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <wayland-util.h>
 
+#include "background.h"
 #include "common.h"
 #include "gf_math.h"
 #include "log.h"
@@ -74,6 +75,29 @@ void gf_camera_set_focused_obj(const struct gf_obj *obj) {
   camera_focused_obj = obj;
 }
 
+struct gf_quad_bounds gf_camera_get_bounds() {
+
+  int h = render_state.viewport.height, w = render_state.viewport.width;
+
+  assert(h > 0);
+  assert(w > 0);
+
+  vec2s focused_pos = {0.0, 0.0};
+  if (camera_focused_obj != NULL)
+    focused_pos = camera_focused_obj->state.transform.pos;
+
+  struct gf_quad_bounds bounds = {.left   = (focused_pos.x - (0.5 * w)),
+                                  .right  = (focused_pos.x + (0.5 * w)),
+                                  .bottom = (focused_pos.y - (0.5 * h)),
+                                  .top    = (focused_pos.y + (0.5 * h))};
+
+  gf_log(INFO_LOG,
+         "Viewport Bounds: (top = %f, bottom = %f, left = %f, right = %f)",
+         bounds.top, bounds.bottom, bounds.left, bounds.right);
+
+  return bounds;
+}
+
 // TODO: Use a bool to know if viewport in shader is dirty.
 bool gf_render_update_window_size(int32_t width, int32_t height) {
   if (height == render_state.viewport.height &&
@@ -90,22 +114,10 @@ const struct viewport_dimensions *gf_render_get_window_size() {
 }
 
 void gf_obj_sync_projection_matrix(struct gf_obj *obj) {
-  int h = obj->shader->state.last_committed_viewport.height;
-  int w = obj->shader->state.last_committed_viewport.width;
+  struct gf_quad_bounds bounds = gf_camera_get_bounds();
 
-  gf_log(INFO_LOG,
-         "Syncing projection matrix (h: %i, w: %i) to shader program '%i'.", h,
-         w, obj->shader->program);
-
-  vec2s focused_pos = {0.0, 0.0};
-  if (camera_focused_obj != NULL)
-    focused_pos = camera_focused_obj->state.transform.pos;
-
-  assert(h > 0);
-  assert(w > 0);
   mat4 projection;
-  gf_ortho((focused_pos.x - (0.5 * w)), (focused_pos.x + (0.5 * w)),
-           (focused_pos.y - (0.5 * h)), (focused_pos.y + (0.5 * h)), -1.0, 1.0,
+  gf_ortho(bounds.left, bounds.right, bounds.bottom, bounds.top, -1.0, 1.0,
            projection);
 
   glNamedBufferSubData(obj->ubo_mat, 0, sizeof(projection), projection);
