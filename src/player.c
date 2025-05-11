@@ -174,6 +174,8 @@ void gf_player_draw(struct gf_player *player) {
   int sprite_index =
       (player->dir_facing * PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH) +
       player->sprite_col_index;
+  assert(sprite_index < (PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH *
+                         PLAYER_SPRITE_SHEET_CELL_COUNT_HEIGHT));
   // TODO: Figure out a better way to manage player state. (probably use the
   // same commit system used in background and obj)
   gf_obj_set_int(player->obj, "spriteIndex", sprite_index);
