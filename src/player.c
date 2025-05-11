@@ -19,7 +19,7 @@
 #define PLAYER_LIST_MAX                       128
 
 #define PLAYER_SPEED                          300.0f
-#define PLAYER_LERP                           5.0f
+#define PLAYER_LERP                           20.0f
 
 #define PLAYER_TIME_BETWEEN_SPRITE_FRAMES     (1.0f / 10.0f)
 
