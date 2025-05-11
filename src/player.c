@@ -131,20 +131,41 @@ void gf_player_update_state(struct gf_player *player, double delta_time) {
   gf_log(INFO_LOG, "Delta Time: '%f'", delta_time);
   vec2s movement_vector = {.x = 0.0, .y = 0.0};
   if (player->input_state & GF_PLAYER_INPUT_UP) {
-    player->dir_facing = GF_PLAYER_FACING_UP;
     movement_vector.y += 1.0;
   }
   if (player->input_state & GF_PLAYER_INPUT_RIGHT) {
-    player->dir_facing = GF_PLAYER_FACING_RIGHT;
     movement_vector.x += 1.0;
   }
   if (player->input_state & GF_PLAYER_INPUT_DOWN) {
-    player->dir_facing = GF_PLAYER_FACING_DOWN;
     movement_vector.y -= 1.0;
   }
   if (player->input_state & GF_PLAYER_INPUT_LEFT) {
-    player->dir_facing = GF_PLAYER_FACING_LEFT;
     movement_vector.x -= 1.0;
+  }
+  // There is probably a better way to do this.
+  if (movement_vector.y < 0.0f) {
+    if (movement_vector.x > 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_RIGHT_DOWN;
+    else if (movement_vector.x == 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_DOWN;
+  }
+  if (movement_vector.x < 0.0f) {
+    if (movement_vector.y < 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_DOWN_LEFT;
+    else if (movement_vector.y == 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_LEFT;
+  }
+  if (movement_vector.y > 0.0f) {
+    if (movement_vector.x < 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_LEFT_UP;
+    else if (movement_vector.x == 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_UP;
+  }
+  if (movement_vector.x > 0.0f) {
+    if (movement_vector.y > 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_UP_RIGHT;
+    else if (movement_vector.y == 0.0f)
+      player->dir_facing = GF_PLAYER_FACING_RIGHT;
   }
 
   gf_vec2s_normalize(&movement_vector);
