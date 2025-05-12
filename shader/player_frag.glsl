@@ -9,6 +9,8 @@ uniform sampler2D playerTexMask;
 void main() {
   vec4 playerTexColor     = texture(playerTex, texCoord);
   vec4 playerTexMaskColor = texture(playerTexMask, texCoordMask);
+	playerTexMaskColor.x = 1.0;
+
   FragColor = mix(playerTexColor, playerTexMaskColor, playerTexMaskColor.a);
-  // FragColor = playerTexMaskColor;
+	FragColor.a = playerTexColor.a;
 }

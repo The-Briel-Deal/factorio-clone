@@ -28,10 +28,10 @@ void main() {
   vec2 maskOffset = offset;
 
   if (aTexCoord.x == 0.0f) {
-    maskOffset.x -= (18.0f / 720.0f);
+    maskOffset.x -= (18.0f / 1232.0f);
   }
   if (aTexCoord.x == 1.0f) {
-    maskOffset.x += (18.0f / 720.0f);
+    maskOffset.x += (18.0f / 1232.0f);
   }
 
 
