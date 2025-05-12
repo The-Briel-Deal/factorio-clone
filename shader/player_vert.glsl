@@ -8,6 +8,7 @@ layout(std140) uniform Matrices {
 uniform int spriteIndex = 80;
 
 out vec2 texCoord;
+out vec2 texCoordMask;
 
 // The player sprite sheet 22x8 sprites.
 #define PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH  22
@@ -23,4 +24,18 @@ void main() {
   texCoord    = vec2((aTexCoord.x / PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH),
                      aTexCoord.y / PLAYER_SPRITE_SHEET_CELL_COUNT_HEIGHT) +
              offset;
+
+  vec2 maskOffset = offset;
+
+  if (aTexCoord.x == 0.0f) {
+    maskOffset.x -= (18.0f / 720.0f);
+  }
+  if (aTexCoord.x == 1.0f) {
+    maskOffset.x += (18.0f / 720.0f);
+  }
+
+
+  texCoordMask = vec2(aTexCoord.x / PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH,
+                      aTexCoord.y / PLAYER_SPRITE_SHEET_CELL_COUNT_HEIGHT) +
+                 maskOffset;
 }
