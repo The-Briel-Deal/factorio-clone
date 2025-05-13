@@ -7,6 +7,7 @@ layout(std140) uniform Matrices {
 };
 uniform int spriteIndex = 80;
 
+out vec2 rawTexCoord;
 out vec2 texCoord;
 out vec2 texCoordMask;
 
@@ -33,9 +34,14 @@ void main() {
   if (aTexCoord.x == 1.0f) {
     maskOffset.x += (18.0f / 1232.0f);
   }
+  if (aTexCoord.y == 0.0f) {
+    maskOffset.y -= (26.0f / 720.0f);
+  }
 
 
   texCoordMask = vec2(aTexCoord.x / PLAYER_SPRITE_SHEET_CELL_COUNT_WIDTH,
                       aTexCoord.y / PLAYER_SPRITE_SHEET_CELL_COUNT_HEIGHT) +
                  maskOffset;
+
+  rawTexCoord = aTexCoord;
 }

@@ -1,4 +1,5 @@
 #version 450 core
+in vec2 rawTexCoord;
 in vec2 texCoord;
 in vec2 texCoordMask;
 out vec4 FragColor;
@@ -9,8 +10,13 @@ uniform sampler2D playerTexMask;
 void main() {
   vec4 playerTexColor     = texture(playerTex, texCoord);
   vec4 playerTexMaskColor = texture(playerTexMask, texCoordMask);
-	playerTexMaskColor.x = 1.0;
+  playerTexMaskColor.x    = 1.0;
 
-  FragColor = mix(playerTexColor, playerTexMaskColor, playerTexMaskColor.a);
-	FragColor.a = playerTexColor.a;
+  if (rawTexCoord.y < 0.25f) {
+    playerTexMaskColor.a = 0.0f;
+  }
+  playerTexMaskColor.a *= 0.5;
+
+  FragColor   = mix(playerTexColor, playerTexMaskColor, playerTexMaskColor.a);
+  FragColor.a = playerTexColor.a;
 }
