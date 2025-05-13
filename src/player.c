@@ -98,7 +98,7 @@ struct gf_player *gf_player_create() {
   struct gf_shader *shader = gf_shader_create_from_paths(
       "shader/player_vert.glsl", "shader/player_frag.glsl");
   player->obj = gf_obj_create_quad(shader);
-  gf_obj_set_scale(player->obj, (vec2s){100, 100});
+  gf_obj_set_scale(player->obj, (vec2s){92, 116});
   gf_obj_set_texture(player->obj, "playerTex", GF_TEXTURE_CHARACTER_IDLE_1);
   gf_obj_set_texture(player->obj, "playerTexMask",
                      GF_TEXTURE_CHARACTER_IDLE_MASK_1);
