@@ -64,6 +64,7 @@ struct gf_obj {
   struct gf_shader *shader;
   const struct gf_texture *textures[16];
   int texture_locations[16];
+  const char *texture_names[16];
   int texture_count;
   vec2s last_commited_cam_pos;
 };
@@ -397,10 +398,17 @@ bool gf_obj_set_shader(struct gf_obj *obj, struct gf_shader *shader) {
 
 bool gf_obj_set_texture(struct gf_obj *obj, const char *name,
                         enum gf_texture_type type) {
+  for (int i = 0; i < obj->texture_count; i++) {
+    if (obj->texture_names[i] == name) {
+      obj->textures[i] = gf_texture_get(type);
+      return true;
+    }
+  }
   int i = obj->texture_count++;
 
   obj->textures[i]          = gf_texture_get(type);
   obj->texture_locations[i] = glGetUniformLocation(obj->shader->program, name);
+  obj->texture_names[i]     = name;
   return true;
 }
 

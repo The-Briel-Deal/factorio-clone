@@ -41,10 +41,16 @@ enum gf_player_dir_facing {
   GF_PLAYER_FACING_UP         = 7,
 };
 
+enum gf_player_texture_type {
+  GF_PLAYER_TEX_IDLE,
+  GF_PLAYER_TEX_RUNNING,
+};
+
 struct gf_player {
   struct gf_obj *obj;
   vec2s movement;
   enum gf_player_input_state input_state;
+  enum gf_player_texture_type tex_type;
   enum gf_player_dir_facing dir_facing; // Corresponds to sprite sheet y pos.
   uint sprite_col_index;                // Corresponds to sprite sheet x pos.
   float time_till_next_sprite;
@@ -99,6 +105,7 @@ struct gf_player *gf_player_create() {
       "shader/player_vert.glsl", "shader/player_frag.glsl");
   player->obj = gf_obj_create_quad(shader);
   gf_obj_set_scale(player->obj, (vec2s){92, 116});
+  player->tex_type = GF_PLAYER_TEX_IDLE;
   gf_obj_set_texture(player->obj, "playerTex", GF_TEXTURE_CHARACTER_IDLE_1);
   gf_obj_set_texture(player->obj, "playerTexMask",
                      GF_TEXTURE_CHARACTER_IDLE_MASK_1);
@@ -168,6 +175,30 @@ void gf_player_update_state(struct gf_player *player, double delta_time) {
       player->dir_facing = GF_PLAYER_FACING_UP_RIGHT;
     else if (movement_vector.y == 0.0f)
       player->dir_facing = GF_PLAYER_FACING_RIGHT;
+  }
+  enum gf_player_texture_type tex_type = GF_PLAYER_TEX_IDLE;
+
+  if (movement_vector.x != 0.0f || movement_vector.y != 0.0f) {
+    tex_type = GF_PLAYER_TEX_RUNNING;
+  }
+
+  if (tex_type != player->tex_type) {
+    player->tex_type = tex_type;
+
+    switch (tex_type) {
+      case GF_PLAYER_TEX_IDLE:
+        gf_obj_set_texture(player->obj, "playerTex",
+                           GF_TEXTURE_CHARACTER_IDLE_1);
+        gf_obj_set_texture(player->obj, "playerTexMask",
+                           GF_TEXTURE_CHARACTER_IDLE_MASK_1);
+        break;
+      case GF_PLAYER_TEX_RUNNING:
+        gf_obj_set_texture(player->obj, "playerTex",
+                           GF_TEXTURE_CHARACTER_RUNNING_1);
+        gf_obj_set_texture(player->obj, "playerTexMask",
+                           GF_TEXTURE_CHARACTER_RUNNING_MASK_1);
+        break;
+    }
   }
 
   gf_vec2s_normalize(&movement_vector);

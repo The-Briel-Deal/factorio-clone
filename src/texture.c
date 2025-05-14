@@ -21,6 +21,12 @@ static struct gf_texture_map_item texture_map[] = {
     [GF_TEXTURE_CHARACTER_IDLE_MASK_1] =
         {.initialized = false,
          .img_path    = "static/character/level1_idle_mask.png"},
+    [GF_TEXTURE_CHARACTER_RUNNING_1] =
+        {.initialized = false,
+         .img_path    = "static/character/level1_running.png"},
+    [GF_TEXTURE_CHARACTER_RUNNING_MASK_1] =
+        {.initialized = false,
+         .img_path    = "static/character/level1_running_mask.png"},
     [GF_TEXTURE_GRASS_1] = {.initialized = false,
                             .img_path    = "static/grass-1.png"}};
 
